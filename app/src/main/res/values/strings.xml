@@ -1,3 +1,45 @@
 <resources>
     <string name="app_name">Pulse Guard</string>
+
+    <!-- Entry Screen: labels -->
+    <string name="entry_screen_title">Neue Messung</string>
+    <string name="label_systolic">Systolisch (mmHg)</string>
+    <string name="label_diastolic">Diastolisch (mmHg)</string>
+    <string name="label_pulse">Puls (bpm)</string>
+    <string name="label_arm_left">Linker Arm</string>
+    <string name="label_arm_right">Rechter Arm</string>
+    <string name="label_medication_toggle">Medikament eingenommen</string>
+    <string name="label_measurement_time">Messzeitpunkt</string>
+    <string name="label_measurement_arm">Messarm</string>
+
+    <!-- Entry Screen: buttons -->
+    <string name="button_save">Speichern</string>
+
+    <!-- Entry Screen: validation errors (also defined as constants in EntryViewModel) -->
+    <string name="error_field_required">Dieses Feld ist erforderlich</string>
+    <string name="error_systolic_range">Wert muss zwischen 60 und 300 mmHg liegen</string>
+    <string name="error_diastolic_range">Wert muss zwischen 30 und 200 mmHg liegen</string>
+    <string name="error_pulse_range">Wert muss zwischen 30 und 250 bpm liegen</string>
+    <string name="error_systolic_greater_diastolic">Systolisch muss größer als Diastolisch sein</string>
+
+    <!-- Entry Screen: feedback -->
+    <string name="snackbar_save_success">Messung gespeichert</string>
+
+    <!-- Accessibility: content descriptions -->
+    <string name="cd_navigate_back">Zurück</string>
+    <string name="cd_arm_selector">Messarm auswählen</string>
+    <string name="cd_medication_toggle">Medikament-Toggle: Medikament eingenommen</string>
+    <string name="cd_save_button">Messung speichern</string>
+    <string name="cd_add_entry">Neue Messung hinzufügen</string>
+
+    <!-- Date/Time picker dialogs -->
+    <string name="dialog_select_date">Datum auswählen</string>
+    <string name="dialog_select_time">Uhrzeit auswählen</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Abbrechen</string>
+    <string name="dialog_next">Weiter</string>
+
+    <!-- Dashboard placeholder (Phase 3) -->
+    <string name="dashboard_placeholder_title">Dashboard</string>
+    <string name="dashboard_placeholder_body">Kommt in Phase 3 – noch keine Einträge vorhanden.</string>
 </resources>
