@@ -64,10 +64,9 @@ import org.koin.androidx.compose.koinViewModel
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Calendar
-import java.util.Locale
 
 /**
  * Full-screen composable for entering a new blood pressure measurement.
@@ -106,15 +105,15 @@ fun EntryScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
-    val initialCalendar = remember(uiState.timestamp) {
-        Calendar.getInstance().apply { timeInMillis = uiState.timestamp }
+    val initialDateTime = remember(uiState.timestamp) {
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(uiState.timestamp), ZoneId.systemDefault())
     }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = uiState.timestamp,
     )
     val timePickerState = rememberTimePickerState(
-        initialHour = initialCalendar.get(Calendar.HOUR_OF_DAY),
-        initialMinute = initialCalendar.get(Calendar.MINUTE),
+        initialHour = initialDateTime.hour,
+        initialMinute = initialDateTime.minute,
     )
 
     // ── Side effects ──────────────────────────────────────────────────────
@@ -163,16 +162,15 @@ fun EntryScreen(
             title = { Text(stringResource(R.string.dialog_select_time)) },
             confirmButton = {
                 TextButton(onClick = {
-                    val selectedDateMillis =
-                        datePickerState.selectedDateMillis ?: uiState.timestamp
-                    val cal = Calendar.getInstance().apply {
-                        timeInMillis = selectedDateMillis
-                        set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-                        set(Calendar.MINUTE, timePickerState.minute)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }
-                    viewModel.onEvent(EntryEvent.TimestampChanged(cal.timeInMillis))
+                    val selectedDateMillis = datePickerState.selectedDateMillis ?: uiState.timestamp
+                    val combinedMillis = Instant.ofEpochMilli(selectedDateMillis)
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDate()
+                        .atTime(timePickerState.hour, timePickerState.minute)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                    viewModel.onEvent(EntryEvent.TimestampChanged(combinedMillis))
                     showTimePicker = false
                 }) { Text(stringResource(R.string.dialog_ok)) }
             },
@@ -224,7 +222,8 @@ fun EntryScreen(
                 onValueChange = { viewModel.onEvent(EntryEvent.SystolicChanged(it)) },
                 label = stringResource(R.string.label_systolic),
                 modifier = Modifier.fillMaxWidth(),
-                errorMessage = uiState.visibleErrors[EntryUiState.FIELD_SYSTOLIC],
+                errorMessage = uiState.visibleErrors[EntryUiState.FIELD_SYSTOLIC]
+                    ?.let { stringResource(it) },
                 imeAction = ImeAction.Next,
                 keyboardActions = KeyboardActions(
                     onNext = { diastolicFocus.requestFocus() },
@@ -238,7 +237,8 @@ fun EntryScreen(
                 onValueChange = { viewModel.onEvent(EntryEvent.DiastolicChanged(it)) },
                 label = stringResource(R.string.label_diastolic),
                 modifier = Modifier.fillMaxWidth(),
-                errorMessage = uiState.visibleErrors[EntryUiState.FIELD_DIASTOLIC],
+                errorMessage = uiState.visibleErrors[EntryUiState.FIELD_DIASTOLIC]
+                    ?.let { stringResource(it) },
                 imeAction = ImeAction.Next,
                 keyboardActions = KeyboardActions(
                     onNext = { pulseFocus.requestFocus() },
@@ -252,7 +252,8 @@ fun EntryScreen(
                 onValueChange = { viewModel.onEvent(EntryEvent.PulseChanged(it)) },
                 label = stringResource(R.string.label_pulse),
                 modifier = Modifier.fillMaxWidth(),
-                errorMessage = uiState.visibleErrors[EntryUiState.FIELD_PULSE],
+                errorMessage = uiState.visibleErrors[EntryUiState.FIELD_PULSE]
+                    ?.let { stringResource(it) },
                 imeAction = ImeAction.Done,
                 keyboardActions = KeyboardActions(
                     onDone = { viewModel.onEvent(EntryEvent.SaveClicked) },
@@ -326,7 +327,6 @@ private fun TimestampRow(
         )
         DateTimeFormatter
             .ofLocalizedDateTime(FormatStyle.MEDIUM)
-            .withLocale(Locale.getDefault())
             .format(localDateTime)
     }
 

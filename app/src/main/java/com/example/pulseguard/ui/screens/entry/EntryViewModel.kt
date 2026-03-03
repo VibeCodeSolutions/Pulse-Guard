@@ -3,7 +3,9 @@ package com.example.pulseguard.ui.screens.entry
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pulseguard.R
 import com.example.pulseguard.domain.model.MeasurementArm
+import com.example.pulseguard.domain.usecase.AddMeasurementResult
 import com.example.pulseguard.domain.usecase.AddMeasurementUseCase
 import com.example.pulseguard.ui.screens.entry.EntryUiState.Companion.FIELD_DIASTOLIC
 import com.example.pulseguard.ui.screens.entry.EntryUiState.Companion.FIELD_PULSE
@@ -13,19 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-// Validation error messages (also mirrored in strings.xml for reference)
-private const val ERROR_REQUIRED = "Dieses Feld ist erforderlich"
-private const val ERROR_SYSTOLIC_RANGE =
-    "Wert muss zwischen ${AddMeasurementUseCase.SYSTOLIC_MIN} " +
-        "und ${AddMeasurementUseCase.SYSTOLIC_MAX} mmHg liegen"
-private const val ERROR_DIASTOLIC_RANGE =
-    "Wert muss zwischen ${AddMeasurementUseCase.DIASTOLIC_MIN} " +
-        "und ${AddMeasurementUseCase.DIASTOLIC_MAX} mmHg liegen"
-private const val ERROR_PULSE_RANGE =
-    "Wert muss zwischen ${AddMeasurementUseCase.PULSE_MIN} " +
-        "und ${AddMeasurementUseCase.PULSE_MAX} bpm liegen"
-private const val ERROR_SYSTOLIC_GREATER = "Systolisch muss größer als Diastolisch sein"
 
 private val ALL_FIELDS = setOf(FIELD_SYSTOLIC, FIELD_DIASTOLIC, FIELD_PULSE)
 
@@ -37,7 +26,12 @@ private val ALL_FIELDS = setOf(FIELD_SYSTOLIC, FIELD_DIASTOLIC, FIELD_PULSE)
  * validity without computing anything itself (pure UDF). The [MutableStateFlow]
  * deduplicates identical states, avoiding unnecessary recompositions.
  *
- * @property addMeasurementUseCase Responsible for final validation and persistence.
+ * Validation errors are stored as [@androidx.annotation.StringRes] IDs in
+ * [EntryUiState.validationErrors], keeping this class free of Android [android.content.Context]
+ * while letting the UI resolve locale-correct strings via
+ * [androidx.compose.ui.res.stringResource].
+ *
+ * @property addMeasurementUseCase Responsible for final domain validation and persistence.
  */
 class EntryViewModel(
     private val addMeasurementUseCase: AddMeasurementUseCase,
@@ -106,12 +100,7 @@ class EntryViewModel(
         val current = _uiState.value
 
         // Force full validation with all fields marked as touched
-        val errors = validate(
-            current.systolic,
-            current.diastolic,
-            current.pulse,
-            ALL_FIELDS,
-        )
+        val errors = validate(current.systolic, current.diastolic, current.pulse, ALL_FIELDS)
         if (errors.isNotEmpty()) {
             _uiState.update { it.copy(validationErrors = errors, touchedFields = ALL_FIELDS) }
             return
@@ -124,18 +113,22 @@ class EntryViewModel(
         _uiState.update { it.copy(isSaving = true) }
 
         viewModelScope.launch {
-            val result = addMeasurementUseCase.execute(
-                systolic = systolic,
-                diastolic = diastolic,
-                pulse = pulse,
-                arm = current.measurementArm,
-                medicationTaken = current.medicationTaken,
-                timestamp = current.timestamp,
-            )
-            result.fold(
-                onSuccess = { _uiState.update { it.copy(isSaving = false, saveSuccess = true) } },
-                onFailure = { _uiState.update { it.copy(isSaving = false) } },
-            )
+            when (
+                addMeasurementUseCase.execute(
+                    systolic = systolic,
+                    diastolic = diastolic,
+                    pulse = pulse,
+                    arm = current.measurementArm,
+                    medicationTaken = current.medicationTaken,
+                    timestamp = current.timestamp,
+                )
+            ) {
+                is AddMeasurementResult.Success ->
+                    _uiState.update { it.copy(isSaving = false, saveSuccess = true) }
+                is AddMeasurementResult.ValidationError ->
+                    // Domain guard triggered unexpectedly – UI validation should have caught this.
+                    _uiState.update { it.copy(isSaving = false) }
+            }
         }
     }
 
@@ -149,6 +142,10 @@ class EntryViewModel(
      * Cross-field validation (systolic > diastolic) only runs when both fields
      * have been touched and individually pass their single-field checks.
      *
+     * Map values are [@androidx.annotation.StringRes] resource IDs. The UI layer
+     * resolves them to locale-correct strings via `stringResource()`, so this
+     * function remains free of Android [android.content.Context].
+     *
      * This function is pure – it produces no side effects.
      */
     private fun validate(
@@ -156,8 +153,8 @@ class EntryViewModel(
         diastolicStr: String,
         pulseStr: String,
         touched: Set<String>,
-    ): Map<String, String> {
-        val errors = mutableMapOf<String, String>()
+    ): Map<String, Int> {
+        val errors = mutableMapOf<String, Int>()
 
         val systolicInt = systolicStr.toIntOrNull()
         val diastolicInt = diastolicStr.toIntOrNull()
@@ -166,30 +163,30 @@ class EntryViewModel(
         if (FIELD_SYSTOLIC in touched) {
             when {
                 systolicStr.isEmpty() ->
-                    errors[FIELD_SYSTOLIC] = ERROR_REQUIRED
+                    errors[FIELD_SYSTOLIC] = R.string.error_field_required
                 systolicInt == null
                     || systolicInt !in AddMeasurementUseCase.SYSTOLIC_MIN..AddMeasurementUseCase.SYSTOLIC_MAX ->
-                    errors[FIELD_SYSTOLIC] = ERROR_SYSTOLIC_RANGE
+                    errors[FIELD_SYSTOLIC] = R.string.error_systolic_range
             }
         }
 
         if (FIELD_DIASTOLIC in touched) {
             when {
                 diastolicStr.isEmpty() ->
-                    errors[FIELD_DIASTOLIC] = ERROR_REQUIRED
+                    errors[FIELD_DIASTOLIC] = R.string.error_field_required
                 diastolicInt == null
                     || diastolicInt !in AddMeasurementUseCase.DIASTOLIC_MIN..AddMeasurementUseCase.DIASTOLIC_MAX ->
-                    errors[FIELD_DIASTOLIC] = ERROR_DIASTOLIC_RANGE
+                    errors[FIELD_DIASTOLIC] = R.string.error_diastolic_range
             }
         }
 
         if (FIELD_PULSE in touched) {
             when {
                 pulseStr.isEmpty() ->
-                    errors[FIELD_PULSE] = ERROR_REQUIRED
+                    errors[FIELD_PULSE] = R.string.error_field_required
                 pulseInt == null
                     || pulseInt !in AddMeasurementUseCase.PULSE_MIN..AddMeasurementUseCase.PULSE_MAX ->
-                    errors[FIELD_PULSE] = ERROR_PULSE_RANGE
+                    errors[FIELD_PULSE] = R.string.error_pulse_range
             }
         }
 
@@ -200,7 +197,7 @@ class EntryViewModel(
             && FIELD_SYSTOLIC !in errors && FIELD_DIASTOLIC !in errors
             && systolicInt <= diastolicInt
         ) {
-            errors[FIELD_SYSTOLIC] = ERROR_SYSTOLIC_GREATER
+            errors[FIELD_SYSTOLIC] = R.string.error_systolic_greater_diastolic
         }
 
         return errors

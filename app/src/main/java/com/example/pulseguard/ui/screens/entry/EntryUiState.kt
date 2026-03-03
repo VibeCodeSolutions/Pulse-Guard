@@ -1,6 +1,7 @@
 // com.example.pulseguard.ui.screens.entry.EntryUiState
 package com.example.pulseguard.ui.screens.entry
 
+import androidx.annotation.StringRes
 import com.example.pulseguard.domain.model.MeasurementArm
 
 /**
@@ -10,18 +11,20 @@ import com.example.pulseguard.domain.model.MeasurementArm
  * without coercion. Parsing to [Int] happens exclusively in [EntryViewModel]
  * upon save.
  *
- * @property systolic        Raw string typed for systolic pressure (mmHg).
- * @property diastolic       Raw string typed for diastolic pressure (mmHg).
- * @property pulse           Raw string typed for pulse / heart rate (bpm).
- * @property measurementArm  Currently selected measurement arm.
- * @property medicationTaken Whether the user reported medication as taken.
- * @property timestamp       Measurement time as Unix epoch millis; defaults to now.
- * @property validationErrors Map of field key → localised error message string.
+ * @property systolic         Raw string typed for systolic pressure (mmHg).
+ * @property diastolic        Raw string typed for diastolic pressure (mmHg).
+ * @property pulse            Raw string typed for pulse / heart rate (bpm).
+ * @property measurementArm   Currently selected measurement arm.
+ * @property medicationTaken  Whether the user reported medication as taken.
+ * @property timestamp        Measurement time as Unix epoch millis; defaults to now.
+ * @property validationErrors Map of field key → [@StringRes] error message resource ID.
+ *                            Values are resolved to locale-correct strings by the UI layer
+ *                            via [androidx.compose.ui.res.stringResource].
  *                            Keys: [FIELD_SYSTOLIC], [FIELD_DIASTOLIC], [FIELD_PULSE].
- * @property touchedFields   Fields the user has interacted with; errors are only
+ * @property touchedFields    Fields the user has interacted with; errors are only
  *                            displayed for touched fields (or after a save attempt).
- * @property isSaving        True while the repository insert is in flight.
- * @property saveSuccess     Becomes true after a successful save; triggers navigation
+ * @property isSaving         True while the repository insert is in flight.
+ * @property saveSuccess      Becomes true after a successful save; triggers navigation
  *                            and haptic feedback side effects in the UI.
  */
 data class EntryUiState(
@@ -31,7 +34,7 @@ data class EntryUiState(
     val measurementArm: MeasurementArm = MeasurementArm.LEFT,
     val medicationTaken: Boolean = false,
     val timestamp: Long = System.currentTimeMillis(),
-    val validationErrors: Map<String, String> = emptyMap(),
+    val validationErrors: Map<String, Int> = emptyMap(),
     val touchedFields: Set<String> = emptySet(),
     val isSaving: Boolean = false,
     val saveSuccess: Boolean = false,
@@ -41,7 +44,7 @@ data class EntryUiState(
      * Only errors for fields in [touchedFields] are included, preventing
      * premature error display on pristine fields.
      */
-    val visibleErrors: Map<String, String>
+    val visibleErrors: Map<String, Int>
         get() = validationErrors.filter { (key, _) -> key in touchedFields }
 
     /**
