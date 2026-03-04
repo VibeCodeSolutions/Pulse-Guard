@@ -155,7 +155,7 @@ Visuell polierte App mit Theme, Animationen, Empty States und Edge-Case-Handling
 - [x] **5.10** Edge Case: Grenzwerte in EntryViewModel.validate() korrekt (60–300 / 30–200 / 30–250)
 - [x] **5.11** Edge Case: Systolisch ≤ Diastolisch → error_systolic_greater_diastolic implementiert
 - [x] **5.12** Splash Screen API (ab API 31) konfiguriert: core-splashscreen 1.0.1, Theme.SplashScreen, installSplashScreen()
-- [ ] **5.13** App-Icon (Adaptive Icon) einbinden – offen (Platzhalter aus Template vorhanden)
+- [x] **5.13** App-Icon (Adaptive Icon) einbinden – Custom Background + Foreground XML in Phase 7 erstellt
 - [x] **5.14** `./gradlew assembleDebug` erfolgreich ✅
 - [x] **5.15** State Snapshot in `state.md` geschrieben
 
@@ -199,10 +199,38 @@ Vollständige Test-Suite mit Unit Tests, Integration Tests und UI Tests.
 
 ---
 
+## Phase 7: Production Hardening
+**Agent:** ADA | **Abhängigkeiten:** Alle Phasen ✅ | **Status:** ✅ Abgeschlossen (2026-03-04)
+
+### Deliverable
+Vollständige Delete+Undo-Funktion, explizites IO-Dispatching, Custom Adaptive Icon.
+
+### Aufgaben
+
+- [x] **7.1** `DeleteMeasurementUseCase.kt` erstellen – `execute(id: Long)` delegiert an `repository.deleteEntry(id)`; idempotent
+- [x] **7.2** `DashboardEvent` erweitern – `EntryDeleted(entry: BloodPressureEntry)` (volle Entity statt ID für Undo), `UndoDelete`, `SnackbarDismissed`
+- [x] **7.3** `DashboardUiState` erweitern – `pendingDeleteEntry: BloodPressureEntry?` als Snackbar-Trigger
+- [x] **7.4** `DashboardViewModel` implementieren – `_pendingDeleteEntry: MutableStateFlow`, `combine()` in `uiState`, `handleDelete()`, `handleUndoDelete()` (re-insert mit `id = 0`)
+- [x] **7.5** `DashboardScreen` implementieren – `SwipeToDeleteCard` (EndToStart only), `LaunchedEffect(pendingDeleteEntry)` Snackbar mit Undo-Action
+- [x] **7.6** String-Ressourcen ergänzen – `snackbar_entry_deleted`, `snackbar_action_undo`
+- [x] **7.7** `ExportToPdfUseCase` – `ioDispatcher: CoroutineDispatcher = Dispatchers.IO` als injizierbaren Parameter; `execute()` via `withContext(ioDispatcher)`
+- [x] **7.8** Koin `AppModule.kt` – `DeleteMeasurementUseCase` in `useCaseModule`; `DashboardViewModel` mit 3 Parametern
+- [x] **7.9** Custom Adaptive Icon vorbereiten – `ic_launcher_background.xml` (Deep-Red + Highlight), `ic_launcher_foreground.xml` (Herz + EKG-Linie, innerhalb Safe Zone)
+- [x] **7.10** `DashboardViewModelTest` erweitern – 5 neue Tests für `EntryDeleted`, `UndoDelete`, `SnackbarDismissed`; Gesamt: 121 Unit Tests grün
+- [x] **7.11** State Snapshot in `state.md` schreiben
+
+### Kontext-Hinweise
+- Swipe-to-Dismiss nur EndToStart (kein versehentliches Auslösen beim Scrollen)
+- `LaunchedEffect(pendingDeleteEntry)` als Key stellt sicher, dass bei mehrfachem Löschen jedes Mal eine neue Snackbar erscheint
+- `id = 0` beim Undo-Reinsert verhindert `UNIQUE`-Constraint-Verletzungen in Room
+- Kein `!!`-Operator, kein `mutableStateOf` im ViewModel (AGENTS.md-Konformität)
+
+---
+
 ## Zusammenfassung: Abhängigkeitsgraph
 
 ```
-Phase 1 ──┬──→ Phase 2 ──┬──→ Phase 3 ──┐
+Phase 1  ──┬──→ Phase 2 ──┬──→ Phase 3 ──┐
            │              │              │
            └──→ Phase 4 ──┼──────────────┤
                           │              │
@@ -213,7 +241,7 @@ Phase 1 ──┬──→ Phase 2 ──┬──→ Phase 3 ──┐
 
 | Phase | Parallelisierbar mit |
 |-------|---------------------|
-| Phase 1 | – |
+| Phase 1 | – 
 | Phase 2 | Phase 4 (nach Phase 1) |
 | Phase 3 | Phase 4 (nach Phase 1) |
 | Phase 4 | Phase 2, Phase 3 (nach Phase 1) |

@@ -61,10 +61,15 @@
     <string name="dashboard_legend_systolic">Systolisch</string>
     <string name="dashboard_legend_diastolic">Diastolisch</string>
 
+    <!-- Dashboard: delete / undo -->
+    <string name="snackbar_entry_deleted">Eintrag gelöscht</string>
+    <string name="snackbar_action_undo">Rückgängig</string>
+
     <!-- Accessibility: Dashboard -->
     <string name="cd_pressure_chart">Blutdruck-Trend-Diagramm</string>
     <string name="cd_period_selector">Zeitraum auswählen</string>
     <string name="cd_category_badge">Kategorie: %s</string>
+    <string name="cd_delete_entry">Eintrag löschen</string>
 
     <!-- Export Screen -->
     <string name="export_screen_title">PDF Export</string>

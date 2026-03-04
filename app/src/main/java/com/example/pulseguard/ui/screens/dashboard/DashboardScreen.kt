@@ -8,6 +8,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
@@ -37,9 +39,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +66,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pulseguard.R
+import com.example.pulseguard.data.local.entity.BloodPressureEntry
 import com.example.pulseguard.domain.model.BloodPressureCategory
 import com.example.pulseguard.domain.model.DashboardAggregation
 import com.example.pulseguard.domain.model.DashboardPeriod
@@ -74,11 +84,14 @@ import org.koin.androidx.compose.koinViewModel
  * All state comes from [DashboardViewModel] via a reactive [StateFlow]; no business
  * logic lives in this composable.
  *
- * Includes:
- * - FAB bounce animation via [MutableInteractionSource] + [animateFloatAsState].
- * - Staggered entrance animation on the [BloodPressureCard] list via
- *   [AnimatedVisibility] + [LaunchedEffect] delay, capped at 7 visible items
+ * ### Features
+ * - **FAB bounce animation** via [MutableInteractionSource] + [animateFloatAsState].
+ * - **Staggered entrance animation** on the [BloodPressureCard] list, capped at 7 items
  *   (max 385 ms stagger) to keep the animation snappy regardless of list size.
+ * - **Swipe-to-delete**: each [BloodPressureCard] can be dismissed end-to-start,
+ *   dispatching [DashboardEvent.EntryDeleted] to the ViewModel.
+ * - **Undo snackbar**: after deletion a snackbar with an "Undo" action is shown.
+ *   Tapping "Undo" dispatches [DashboardEvent.UndoDelete].
  *
  * @param onAddEntry Lambda invoked when the user taps the FAB to add a new entry.
  * @param onExport   Lambda invoked when the user taps the TopAppBar export action.
@@ -92,6 +105,29 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Capture strings in composable scope for use inside LaunchedEffect coroutine.
+    val snackbarDeletedMsg = stringResource(R.string.snackbar_entry_deleted)
+    val snackbarUndoAction = stringResource(R.string.snackbar_action_undo)
+
+    // Show undo snackbar whenever pendingDeleteEntry changes to a non-null value.
+    // Using pendingDeleteEntry as the key ensures a new snackbar is shown for each delete,
+    // even if the user deletes entries in quick succession.
+    val pendingDeleteEntry = uiState.pendingDeleteEntry
+    LaunchedEffect(pendingDeleteEntry) {
+        if (pendingDeleteEntry != null) {
+            val result = snackbarHostState.showSnackbar(
+                message = snackbarDeletedMsg,
+                actionLabel = snackbarUndoAction,
+                duration = SnackbarDuration.Short,
+            )
+            when (result) {
+                SnackbarResult.ActionPerformed -> viewModel.onEvent(DashboardEvent.UndoDelete)
+                SnackbarResult.Dismissed -> viewModel.onEvent(DashboardEvent.SnackbarDismissed)
+            }
+        }
+    }
 
     // ── FAB bounce animation ───────────────────────────────────────────────
     val fabInteractionSource = remember { MutableInteractionSource() }
@@ -131,6 +167,7 @@ fun DashboardScreen(
                 )
             }
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
         if (uiState.isLoading) {
             Box(
@@ -192,7 +229,7 @@ fun DashboardScreen(
                         )
                     }
 
-                    // ── Staggered entrance animation ───────────────────────
+                    // ── Staggered entrance + swipe-to-delete ──────────────
                     itemsIndexed(
                         items = uiState.recentEntries,
                         key = { _, item -> "${item.id}_${item.timestamp}" },
@@ -212,8 +249,9 @@ fun DashboardScreen(
                                     initialOffsetY = { fullHeight -> fullHeight / 4 },
                                 ),
                         ) {
-                            BloodPressureCard(
+                            SwipeToDeleteCard(
                                 entry = entry,
+                                onDelete = { viewModel.onEvent(DashboardEvent.EntryDeleted(it)) },
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
@@ -223,6 +261,60 @@ fun DashboardScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * Wraps [BloodPressureCard] with a [SwipeToDismissBox] that reveals a red delete
+ * background on an end-to-start swipe. Confirming the swipe calls [onDelete].
+ *
+ * Only end-to-start dismissal is enabled; start-to-end swipe is disabled to
+ * avoid accidental deletions while scrolling.
+ *
+ * @param entry    The entry to display and potentially delete.
+ * @param onDelete Callback invoked with the entry when the swipe is confirmed.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeToDeleteCard(
+    entry: BloodPressureEntry,
+    onDelete: (BloodPressureEntry) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete(entry)
+                true
+            } else {
+                false
+            }
+        },
+    )
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(end = 20.dp),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = stringResource(R.string.cd_delete_entry),
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+        },
+        modifier = modifier,
+    ) {
+        BloodPressureCard(
+            entry = entry,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

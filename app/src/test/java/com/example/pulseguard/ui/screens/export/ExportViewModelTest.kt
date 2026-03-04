@@ -56,7 +56,9 @@ class ExportViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepo = FakeBloodPressureRepository()
-        viewModel = ExportViewModel(ExportToPdfUseCase(fakeRepo), fakeRepo)
+        // Inject testDispatcher as ioDispatcher so withContext(ioDispatcher) runs inline
+        // on the TestCoroutineScheduler instead of a real IO thread pool.
+        viewModel = ExportViewModel(ExportToPdfUseCase(fakeRepo, testDispatcher), fakeRepo)
     }
 
     @After

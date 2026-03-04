@@ -6,6 +6,7 @@ import com.example.pulseguard.data.local.PulseGuardDatabase
 import com.example.pulseguard.data.repository.BloodPressureRepositoryImpl
 import com.example.pulseguard.domain.repository.BloodPressureRepository
 import com.example.pulseguard.domain.usecase.AddMeasurementUseCase
+import com.example.pulseguard.domain.usecase.DeleteMeasurementUseCase
 import com.example.pulseguard.domain.usecase.ExportToPdfUseCase
 import com.example.pulseguard.domain.usecase.GetDashboardDataUseCase
 import com.example.pulseguard.ui.screens.dashboard.DashboardViewModel
@@ -44,6 +45,7 @@ val repositoryModule = module {
  */
 val useCaseModule = module {
     factory { AddMeasurementUseCase(get()) }
+    factory { DeleteMeasurementUseCase(get()) }
     factory { GetDashboardDataUseCase(get()) }
     factory { ExportToPdfUseCase(get()) }
 }
@@ -53,6 +55,6 @@ val useCaseModule = module {
  */
 val viewModelModule = module {
     viewModel { EntryViewModel(get()) }
-    viewModel { DashboardViewModel(get()) }
+    viewModel { DashboardViewModel(get(), get(), get()) }
     viewModel { ExportViewModel(get(), get()) }
 }

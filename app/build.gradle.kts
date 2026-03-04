@@ -41,6 +41,12 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 // Kotlin JVM target – replaces deprecated kotlinOptions (removed in AGP 9.0)
@@ -99,6 +105,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 
     // Instrumented Tests
     androidTestImplementation(libs.androidx.junit)

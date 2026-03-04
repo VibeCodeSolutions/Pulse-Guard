@@ -26,6 +26,9 @@ class FakeBloodPressureRepository : BloodPressureRepository {
     /** Number of times [insertEntry] was invoked; use to assert persistence calls. */
     var insertCallCount: Int = 0
 
+    /** Number of times [deleteEntry] was invoked; use to assert delete calls. */
+    var deleteCallCount: Int = 0
+
     /**
      * Result returned by [generatePdfUri]. Defaults to failure so tests that
      * don't need PDF generation don't accidentally succeed.
@@ -79,6 +82,7 @@ class FakeBloodPressureRepository : BloodPressureRepository {
     }
 
     override suspend fun deleteEntry(id: Long) {
+        deleteCallCount++
         _entries.value = _entries.value.filter { it.id != id }
     }
 
@@ -92,10 +96,11 @@ class FakeBloodPressureRepository : BloodPressureRepository {
         _entries.value = entries
     }
 
-    /** Clears all stored entries, resets the insert counter, and restores the default PDF result. */
+    /** Clears all stored entries, resets all counters, and restores the default PDF result. */
     fun reset() {
         _entries.value = emptyList()
         insertCallCount = 0
+        deleteCallCount = 0
         generatePdfResult = Result.failure(UnsupportedOperationException("Not configured"))
     }
 }
