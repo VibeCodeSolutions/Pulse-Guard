@@ -48,7 +48,7 @@ data class DashboardData(
  *
  * Flow architecture:
  * ```
- * midnightTickerFlow()          — emits Unit at startup, then once per UTC midnight
+ * midnightTicker                — emits Unit at startup, then once per UTC midnight
  *   └─ flatMapLatest { _ ->
  *        val (startMs, endMs) = period.toTimeRange()   ← fresh on each tick
  *        combine(
@@ -59,9 +59,14 @@ data class DashboardData(
  *      }
  * ```
  *
- * @param repository The [BloodPressureRepository] injected via Koin.
+ * @param repository    The [BloodPressureRepository] injected via Koin.
+ * @param midnightTicker Flow that emits [Unit] immediately and then once per UTC midnight.
+ *                       Override in tests with `flowOf(Unit)` to avoid infinite delays.
  */
-class GetDashboardDataUseCase(private val repository: BloodPressureRepository) {
+class GetDashboardDataUseCase(
+    private val repository: BloodPressureRepository,
+    private val midnightTicker: Flow<Unit> = midnightTickerFlow(),
+) {
 
     /**
      * Returns a [Flow] of [DashboardData] that re-emits whenever the underlying data
@@ -71,7 +76,7 @@ class GetDashboardDataUseCase(private val repository: BloodPressureRepository) {
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     fun observe(period: DashboardPeriod): Flow<DashboardData> =
-        midnightTickerFlow()
+        midnightTicker
             .flatMapLatest {
                 val (startMs, endMs) = period.toTimeRange()
                 combine(
@@ -88,20 +93,22 @@ class GetDashboardDataUseCase(private val repository: BloodPressureRepository) {
                 }
             }
 
-    /**
-     * Emits [Unit] immediately, then suspends until the next UTC midnight before
-     * emitting again. This keeps the active time window current without polling.
-     */
-    private fun midnightTickerFlow(): Flow<Unit> = flow {
-        while (true) {
-            emit(Unit)
-            val nowMs = Instant.now().toEpochMilli()
-            val nextMidnightMs = LocalDate.now(ZoneOffset.UTC)
-                .plusDays(1)
-                .atStartOfDay(ZoneOffset.UTC)
-                .toInstant()
-                .toEpochMilli()
-            delay(maxOf(0L, nextMidnightMs - nowMs))
+    companion object {
+        /**
+         * Emits [Unit] immediately, then suspends until the next UTC midnight before
+         * emitting again. This keeps the active time window current without polling.
+         */
+        fun midnightTickerFlow(): Flow<Unit> = flow {
+            while (true) {
+                emit(Unit)
+                val nowMs = Instant.now().toEpochMilli()
+                val nextMidnightMs = LocalDate.now(ZoneOffset.UTC)
+                    .plusDays(1)
+                    .atStartOfDay(ZoneOffset.UTC)
+                    .toInstant()
+                    .toEpochMilli()
+                delay(maxOf(0L, nextMidnightMs - nowMs))
+            }
         }
     }
 

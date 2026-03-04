@@ -14,9 +14,9 @@
 |------|------|
 | **Aktuelle Phase** | Phase 6 – Testing |
 | **Aktiver Agent** | QAA |
-| **Gesamtfortschritt** | 5 / 6 Phasen abgeschlossen |
+| **Gesamtfortschritt** | 6 / 6 Phasen abgeschlossen |
 | **Letztes Update** | 2026-03-04 |
-| **Nächste Phase** | Phase 6 |
+| **Nächste Phase** | – (alle Phasen abgeschlossen) |
 | **Blocker** | Keine |
 
 ---
@@ -30,13 +30,95 @@
 | Phase 3 | Dashboard Screen | ADA + Agent 7 | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 4 | Export Engine | ADA | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 5 | Polish | UXA + ADA | ✅ Abgeschlossen | 2026-03-04 |
-| Phase 6 | Testing | QAA | ⬜ Offen | – |
+| Phase 6 | Testing | QAA | ✅ Abgeschlossen | 2026-03-04 |
 
 **Status-Legende:** ⬜ Offen | 🔄 In Arbeit | ✅ Abgeschlossen | ⚠️ Partial
 
 ---
 
 ## 3. Aktueller State Snapshot
+
+### State Snapshot: Agent-7-Review – Post-Phase-6 Test Suite Hardening
+**Agent:** Agent 7
+**Datum:** 2026-03-04
+**Status:** COMPLETE
+
+#### Findings & Fixes (5 Issues)
+
+| Severity | Issue | Fix |
+|----------|-------|-----|
+| CRITICAL | `viewModelScope.cancel()` in Testbody: Hängt gesamte Suite bei fehlgeschlagenem Assert | `midnightTicker: Flow<Unit>` als Constructor-Parameter in `GetDashboardDataUseCase`; Tests injizieren `flowOf(Unit)` |
+| CRITICAL | False-green-Test `uiState_emptyRepositoryAfterSubscription_recentEntriesIsEmpty`: `if (nonLoadingState != null)` schluckt Fehler | `assertNotNull(...)` + Non-null-Assert statt stiller `if`-Guard |
+| WARNING | `ExportViewModelTest`: `advanceUntilIdle()` ist No-op mit `UnconfinedTestDispatcher` | Alle 12 redundanten `advanceUntilIdle()`-Aufrufe entfernt; Import gelöscht |
+| WARNING | `GetDashboardDataUseCaseTest`: `entryNow()` nutzt `System.currentTimeMillis()` pro Aufruf | `private val fixedNow` eingeführt; `entryNow()` verwendet `fixedNow - 1_000L` |
+| REFACTOR | `FakeBloodPressureRepository.reset()` setzt `generatePdfResult` nicht zurück | `reset()` restauriert `generatePdfResult` auf Failure-Default |
+
+#### Geänderte Dateien
+- `domain/usecase/GetDashboardDataUseCase.kt` – `midnightTickerFlow()` → `companion object`; `midnightTicker: Flow<Unit> = midnightTickerFlow()` als 2. Constructor-Parameter
+- `ui/screens/dashboard/DashboardViewModelTest.kt` – `flowOf(Unit)` in setUp; alle `viewModelScope.cancel()` entfernt; False-green-Assertion gefixt; `initialState_` → `initialValue_` umbenannt
+- `domain/usecase/GetDashboardDataUseCaseTest.kt` – `flowOf(Unit)` in setUp; `fixedNow` eingeführt
+- `ui/screens/export/ExportViewModelTest.kt` – alle `advanceUntilIdle()`-Aufrufe + Import entfernt
+- `fake/FakeBloodPressureRepository.kt` – `reset()` restauriert `generatePdfResult`
+
+#### Verifizierung
+- Produktionscode: Koin-Modul unberührt (Default-Parameter greift), `assembleDebug` unverändert ✅
+- `./gradlew testDebugUnitTest`: 115 Tests, 0 Fehler ✅
+
+---
+
+### State Snapshot: Phase 6 – Testing
+**Agent:** QAA
+**Datum:** 2026-03-04
+**Status:** COMPLETE
+
+#### Erledigte Arbeit
+
+**Neue Test-Dateien (Unit Tests – `src/test/`):**
+- `fake/FakeBloodPressureRepository.kt` – Gemeinsame In-Memory-Fake-Implementierung via `MutableStateFlow`; unterstützt `seedEntries()`, `insertCallCount`, `generatePdfResult`
+- `domain/usecase/AddMeasurementUseCaseTest.kt` – 18 Tests: Validierung (Grenzwerte Systolisch/Diastolisch/Puls), Cross-Field-Regel, Repository-Delegation
+- `domain/usecase/GetDashboardDataUseCaseTest.kt` – 12 Tests: leere DB, Einzel-Eintrag, Chart-Sortierung, sequenzielle X-Indizes, Perioden-Propagation
+- `domain/usecase/ExportToPdfUseCaseTest.kt` – 3 Tests: Erfolg-Weiterleitung, Fehler-Weiterleitung, Exception-Preservation
+- `ui/screens/entry/EntryViewModelTest.kt` – 27 Tests: Initial State, Field-Events, Einzel-Validierung, Cross-Field-Validierung, `touchedFields`-Mechanismus, Save-Flow, `isSaveEnabled`
+- `ui/screens/dashboard/DashboardViewModelTest.kt` – 8 Tests: Initial State, Periodenauswahl, `EntryDeleted`-Stub; Scheduler-Isolation via `midnightTicker = flowOf(Unit)` (Agent-7-Review-Fix)
+- `ui/screens/export/ExportViewModelTest.kt` – 17 Tests: Initial State, `DateRangeSelected`, `GenerateClicked` (Erfolg+Fehler), `ErrorDismissed`, `canGenerate`
+
+**Neue Test-Dateien (Instrumented Tests – `src/androidTest/`):**
+- `data/local/dao/BloodPressureDaoTest.kt` – 29 Tests: Room In-Memory-DB; alle 7 DAO-Methoden (insert, getAll, getForDateRange Grenzwerte+Reihenfolge, getAverage, getMinMax, delete, getCount)
+- `ui/screens/entry/EntryScreenTest.kt` – 7 UI-Tests via `createComposeRule()` + Koin-Test-Modul
+- `ui/screens/dashboard/DashboardScreenTest.kt` – 8 UI-Tests: Period-Chips, Interaktion, Empty State, FAB, Eintragskarte
+
+**Geänderte Dateien:**
+- `app/build.gradle.kts` – `testOptions { unitTests { isReturnDefaultValues = true } }` + `testImplementation(libs.mockk)`
+- `gradle/libs.versions.toml` – `mockk = "1.13.12"` hinzugefügt
+
+#### Technische Entscheidungen
+
+- **`midnightTicker`-Injection (Agent-7-Fix)**: `GetDashboardDataUseCase` erhält `midnightTicker: Flow<Unit> = midnightTickerFlow()` als Constructor-Parameter. Tests injizieren `flowOf(Unit)` (emittiert einmal, completed) – kein Delay im `TestCoroutineScheduler`, kein `viewModelScope.cancel()` nötig. Produktionscode nutzt weiterhin den echten `midnightTickerFlow()` via Default.
+- **`Result.success(Unit) as Result<Uri>` reicht nicht**: Klappt für `isSuccess`-Checks, schlägt fehl wenn `.onSuccess { uri -> }` den Wert als `Uri` materialisiert (ClassCastException). Fix: `mockk<Uri>(relaxed = true)` via `io.mockk:mockk:1.13.12`.
+- **Zeitstempel-Problem in GetDashboardDataUseCaseTest**: Timestamps `1000L` und `2000L` sind Epochenmillisekunden (1970), außerhalb des aktuellen Datumsbereichs. Fix: `System.currentTimeMillis() - 2000L` / `- 1000L`.
+- **`FakeBloodPressureRepository`**: Alle Flows via `_entries.map { ... }` reaktiv gehalten – entspricht dem echten Repository-Verhalten ohne Android-Framework.
+
+#### Test-Zählung
+
+| Kategorie | Tests |
+|-----------|-------|
+| Unit Tests (neu) | 85 |
+| Unit Tests (bestehend: Converters, Category) | 30 |
+| **Total Unit Tests** | **115** |
+| Instrumented Tests (DAO) | 29 |
+| Instrumented Tests (UI: Entry + Dashboard) | 15 |
+| **Total Instrumented Tests** | **44** |
+
+#### Verifizierung
+- `./gradlew testDebugUnitTest`: ✅ 115/115 Tests grün
+- `./gradlew connectedDebugAndroidTest`: ⚠️ Benötigt Emulator (lokal auszuführen)
+- assembleDebug: ✅ (keine Produktionscode-Änderungen)
+
+#### Offene Punkte
+- `./gradlew connectedDebugAndroidTest` (6.14) benötigt einen laufenden Emulator/Gerät
+- App-Icon (Adaptive Icon) als Platzhalter aus Template – für Release anpassen
+
+---
 
 ### State Snapshot: Phase 5 – Polish (Theming, Animationen, Edge Cases)
 **Agent:** UXA + ADA
