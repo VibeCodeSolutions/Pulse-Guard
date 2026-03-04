@@ -4,7 +4,7 @@ package com.example.pulseguard.domain.usecase
 import com.example.pulseguard.data.local.entity.AggregatedValues
 import com.example.pulseguard.data.local.entity.BloodPressureEntry
 import com.example.pulseguard.data.local.entity.MinMaxValues
-import com.example.pulseguard.data.repository.BloodPressureRepository
+import com.example.pulseguard.domain.repository.BloodPressureRepository
 import com.example.pulseguard.domain.model.BloodPressureCategory
 import com.example.pulseguard.domain.model.ChartDataPoint
 import com.example.pulseguard.domain.model.DashboardAggregation

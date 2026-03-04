@@ -2,7 +2,7 @@
 package com.example.pulseguard.domain.usecase
 
 import com.example.pulseguard.data.local.entity.BloodPressureEntry
-import com.example.pulseguard.data.repository.BloodPressureRepository
+import com.example.pulseguard.domain.repository.BloodPressureRepository
 import com.example.pulseguard.domain.model.MeasurementArm
 
 /**

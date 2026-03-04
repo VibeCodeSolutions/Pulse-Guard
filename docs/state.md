@@ -12,11 +12,11 @@
 
 | Feld | Wert |
 |------|------|
-| **Aktuelle Phase** | Phase 4 – Export Engine |
-| **Aktiver Agent** | ADA |
-| **Gesamtfortschritt** | 3 / 6 Phasen abgeschlossen |
+| **Aktuelle Phase** | Phase 5 – Polish |
+| **Aktiver Agent** | UXA + ADA |
+| **Gesamtfortschritt** | 4 / 6 Phasen abgeschlossen |
 | **Letztes Update** | 2026-03-04 |
-| **Nächste Phase** | Phase 4 |
+| **Nächste Phase** | Phase 5 |
 | **Blocker** | Keine |
 
 ---
@@ -28,7 +28,7 @@
 | Phase 1 | Projekt-Setup + Room DB | ADA | ✅ Abgeschlossen | 2026-03-03 |
 | Phase 2 | Entry Screen | ADA + Agent 7 | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 3 | Dashboard Screen | ADA + Agent 7 | ✅ Abgeschlossen | 2026-03-04 |
-| Phase 4 | Export Engine | ADA | ⬜ Offen | – |
+| Phase 4 | Export Engine | ADA | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 5 | Polish | UXA + ADA | ⬜ Offen | – |
 | Phase 6 | Testing | QAA | ⬜ Offen | – |
 
@@ -37,6 +37,52 @@
 ---
 
 ## 3. Aktueller State Snapshot
+
+### State Snapshot: Phase 4 – Export Engine (PDF + Share)
+**Agent:** ADA
+**Datum:** 2026-03-04
+**Status:** COMPLETE
+
+#### Erledigte Arbeit
+- `domain/usecase/ExportToPdfUseCase.kt` – Natives PDF via `android.graphics.pdf.PdfDocument`; Deckblatt + Messwerttabelle; `FileProvider`-URI-Rückgabe; kein externer Dependency
+- `ui/screens/export/ExportUiState.kt` – Immutables State-Model mit berechneten Properties (`canGenerate`, `canShare`, `isDateRangeSelected`)
+- `ui/screens/export/ExportEvent.kt` – Sealed interface: `DateRangeSelected`, `GenerateClicked`, `ErrorDismissed`
+- `ui/screens/export/ExportViewModel.kt` – UDF-konform; `MutableStateFlow` + `.update {}`; Entry-Count-Preview reaktiv via `getEntriesForDateRange().first()`
+- `ui/screens/export/ExportScreen.kt` – DatePicker (Start/End) via Material3 `DatePickerDialog`; Share via `Intent.ACTION_SEND`; `FLAG_GRANT_READ_URI_PERMISSION` gesetzt
+- `res/xml/file_provider_paths.xml` – `<cache-path name="pdfs" path="exports/" />`
+- `AndroidManifest.xml` – `<provider>` für `androidx.core.content.FileProvider` eingetragen; `android:exported="false"`
+- `di/AppModule.kt` – `ExportToPdfUseCase` (factory, `androidApplication()`-Injection), `ExportViewModel` (viewModel)
+- `ui/navigation/PulseGuardNavGraph.kt` – Export-Route ergänzt
+- `ui/screens/dashboard/DashboardScreen.kt` – TopAppBar-Action (Share-Icon → Export-Screen)
+- `res/values/strings.xml` – alle Export-Strings und Accessibility-Content-Descriptions ergänzt
+
+#### Neuer Code-Stand
+**Packages:**
+- `com.example.pulseguard.domain.usecase` → `ExportToPdfUseCase`
+- `com.example.pulseguard.ui.screens.export` → `ExportUiState`, `ExportEvent`, `ExportViewModel`, `ExportScreen`
+
+**Ressourcen:**
+- `res/xml/file_provider_paths.xml` (neu)
+
+**Keine neuen externen Dependencies** – nativ via Android-SDK
+
+#### Offene Punkte / Known Issues
+- PDF-Generierung ist synchron im I/O-Dispatcher (via `runCatching`); für sehr große Datensätze (>1000 Einträge) könnte ein expliziter `Dispatchers.IO`-Scope in `ExportToPdfUseCase.execute()` sinnvoll sein (Phase 5/6 Optimierung)
+- UXA-Review ausstehend: leerer Zustand wenn keine Einträge in gewähltem Zeitraum, Datumsformat-Konsistenz
+
+#### Kontext für nächsten Agenten (Phase 5 – UXA + ADA)
+- **FileProvider-Authority:** `"${applicationId}.fileprovider"` – konsistent in UseCase und Manifest
+- **Export-Navigation:** Dashboard-TopAppBar (Share-Icon) → `NavRoutes.EXPORT`; Back-Arrow im ExportScreen → `popBackStack()`
+- **`ExportUiState.canGenerate`** verhindert Generierung bei leerem Zeitraum (`previewEntryCount == 0`)
+- **DashboardEvent.EntryDeleted** ist noch Stub – Delete-Logik gehört zu Phase 5
+
+#### Verifizierung
+- assembleDebug: ✅
+- lintDebug: ✅
+- testDebugUnitTest: ⚠️ Lokal auszuführen (Phase 6 dediziert)
+- Anzahl neuer Tests: 0 (Phase 6 dediziert)
+
+---
 
 ### State Snapshot: Phase 3 – Dashboard Screen
 **Agent:** ADA + Agent 7 (Code Review)

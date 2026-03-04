@@ -104,28 +104,28 @@ Dashboard mit Periodenfilter, Aggregation, Trend-Chart und Messungsliste.
 ---
 
 ## Phase 4: Export Engine (PDF + Share)
-**Agent:** ADA | **Abhängigkeiten:** Phase 1 ✅ | **Status:** ⬜ Offen
+**Agent:** ADA | **Abhängigkeiten:** Phase 1 ✅ | **Status:** ✅ Abgeschlossen (2026-03-04)
 
 ### Deliverable
 PDF-Generierung mit Deckblatt, Messwerttabelle und Share-Funktion.
 
 ### Aufgaben
 
-- [ ] **4.1** `ExportToPdfUseCase.kt` erstellen (Daten laden, PDF generieren, URI zurückgeben)
-- [ ] **4.2** PDF-Deckblatt rendern: App-Titel, Zeitraum, Zusammenfassungswerte (Ø, Min/Max, Anzahl, Kategorie)
-- [ ] **4.3** PDF-Messwerttabelle rendern: Spalten Datum/Uhrzeit, Systolisch, Diastolisch, Puls, Arm, Medikament; Seitenumbruch nach ~25 Zeilen
-- [ ] **4.4** Farbige Zeilenmarkierung gemäß WHO-Kategorie in Tabelle
-- [ ] **4.5** `file_provider_paths.xml` erstellen: `<cache-path name="pdfs" path="exports/" />`
-- [ ] **4.6** `AndroidManifest.xml` FileProvider-Eintrag hinzufügen
-- [ ] **4.7** `ExportUiState.kt` Data Class erstellen (dateRangeStart, dateRangeEnd, previewEntryCount, isGenerating, generatedPdfUri)
-- [ ] **4.8** `ExportEvent.kt` Sealed Interface erstellen (DateRangeSelected, GenerateClicked, ShareClicked)
-- [ ] **4.9** `ExportViewModel.kt` erstellen (StateFlow, PDF-Generierung, Share-Intent-Vorbereitung)
-- [ ] **4.10** `ExportScreen.kt` Composable erstellen (DateRangePicker, Vorschau-Info, Generate-Button, Share-Button)
-- [ ] **4.11** Share-Mechanismus: Intent.ACTION_SEND mit type "application/pdf" via FileProvider-URI
-- [ ] **4.12** Koin-Module erweitern (UseCase, ViewModel)
-- [ ] **4.13** Navigation erweitern: Export-Route in NavGraph hinzufügen, BottomNav/TopBar-Action
-- [ ] **4.14** `./gradlew assembleDebug` + `lintDebug` erfolgreich
-- [ ] **4.15** State Snapshot in `state.md` schreiben
+- [x] **4.1** `ExportToPdfUseCase.kt` erstellen (Daten laden, PDF generieren, URI zurückgeben)
+- [x] **4.2** PDF-Deckblatt rendern: App-Titel, Zeitraum, Zusammenfassungswerte (Ø, Min/Max, Anzahl, Kategorie)
+- [x] **4.3** PDF-Messwerttabelle rendern: Spalten Datum/Uhrzeit, Systolisch, Diastolisch, Puls, Arm, Medikament; Seitenumbruch nach ~25 Zeilen
+- [x] **4.4** Farbige Zeilenmarkierung gemäß WHO-Kategorie in Tabelle
+- [x] **4.5** `file_provider_paths.xml` erstellen: `<cache-path name="pdfs" path="exports/" />`
+- [x] **4.6** `AndroidManifest.xml` FileProvider-Eintrag hinzufügen
+- [x] **4.7** `ExportUiState.kt` Data Class erstellen (dateRangeStart, dateRangeEnd, previewEntryCount, isGenerating, generatedPdfUri)
+- [x] **4.8** `ExportEvent.kt` Sealed Interface erstellen (DateRangeSelected, GenerateClicked, ShareClicked)
+- [x] **4.9** `ExportViewModel.kt` erstellen (StateFlow, PDF-Generierung, Share-Intent-Vorbereitung)
+- [x] **4.10** `ExportScreen.kt` Composable erstellen (DateRangePicker, Vorschau-Info, Generate-Button, Share-Button)
+- [x] **4.11** Share-Mechanismus: Intent.ACTION_SEND mit type "application/pdf" via FileProvider-URI
+- [x] **4.12** Koin-Module erweitern (UseCase, ViewModel)
+- [x] **4.13** Navigation erweitern: Export-Route in NavGraph hinzufügen, BottomNav/TopBar-Action
+- [x] **4.14** `./gradlew assembleDebug` + `lintDebug` erfolgreich
+- [x] **4.15** State Snapshot in `state.md` schreiben
 
 ### Kontext-Hinweise
 - Nativ über `android.graphics.pdf.PdfDocument` – keine externe Library

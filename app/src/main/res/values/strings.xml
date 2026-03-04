@@ -64,6 +64,30 @@
     <string name="cd_period_selector">Zeitraum auswählen</string>
     <string name="cd_category_badge">Kategorie: %s</string>
 
+    <!-- Export Screen -->
+    <string name="export_screen_title">PDF Export</string>
+    <string name="export_section_date_range">Zeitraum auswählen</string>
+    <string name="export_start_date_label">Startdatum</string>
+    <string name="export_end_date_label">Enddatum</string>
+    <string name="export_preview_count">%d Messungen im gewählten Zeitraum</string>
+    <string name="export_no_entries">Keine Messungen im gewählten Zeitraum</string>
+    <string name="export_button_generate">PDF generieren</string>
+    <string name="export_button_share">PDF teilen</string>
+    <string name="export_generating">PDF wird erstellt…</string>
+    <string name="export_select_dates">Bitte Start- und Enddatum wählen</string>
+    <string name="export_error_title">Fehler</string>
+    <string name="export_chooser_title">PDF teilen via</string>
+    <string name="export_pdf_filename">Blutdruck-Protokoll</string>
+    <string name="export_not_selected">Nicht gewählt</string>
+    <string name="export_pdf_ready">PDF erstellt – bereit zum Teilen</string>
+
+    <!-- Accessibility: Export -->
+    <string name="cd_export_action">Daten als PDF exportieren</string>
+    <string name="cd_start_date_picker">Startdatum auswählen</string>
+    <string name="cd_end_date_picker">Enddatum auswählen</string>
+    <string name="cd_generate_pdf">PDF-Bericht generieren</string>
+    <string name="cd_share_pdf">Erzeugtes PDF teilen</string>
+
     <!-- Blood pressure category names -->
     <string name="category_optimal">Optimal</string>
     <string name="category_normal">Normal</string>
