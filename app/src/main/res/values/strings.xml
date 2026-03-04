@@ -39,7 +39,36 @@
     <string name="dialog_cancel">Abbrechen</string>
     <string name="dialog_next">Weiter</string>
 
-    <!-- Dashboard placeholder (Phase 3) -->
+    <!-- Dashboard placeholder (kept for build compatibility) -->
     <string name="dashboard_placeholder_title">Dashboard</string>
     <string name="dashboard_placeholder_body">Kommt in Phase 3 – noch keine Einträge vorhanden.</string>
+
+    <!-- Dashboard Screen -->
+    <string name="dashboard_title">Blutdruck</string>
+    <string name="dashboard_period_day">Tag</string>
+    <string name="dashboard_period_week">Woche</string>
+    <string name="dashboard_period_month">Monat</string>
+    <string name="dashboard_summary_avg_systolic">Ø Systolisch</string>
+    <string name="dashboard_summary_avg_diastolic">Ø Diastolisch</string>
+    <string name="dashboard_summary_avg_pulse">Ø Puls</string>
+    <string name="dashboard_summary_entries">%d Messungen</string>
+    <string name="dashboard_empty_title">Noch keine Messungen</string>
+    <string name="dashboard_empty_body">Tippe auf + um deine erste Blutdruckmessung einzutragen.</string>
+    <string name="dashboard_empty_cta">Messung hinzufügen</string>
+    <string name="dashboard_recent_entries">Letzte Messungen</string>
+    <string name="dashboard_legend_systolic">Systolisch</string>
+    <string name="dashboard_legend_diastolic">Diastolisch</string>
+
+    <!-- Accessibility: Dashboard -->
+    <string name="cd_pressure_chart">Blutdruck-Trend-Diagramm</string>
+    <string name="cd_period_selector">Zeitraum auswählen</string>
+    <string name="cd_category_badge">Kategorie: %s</string>
+
+    <!-- Blood pressure category names -->
+    <string name="category_optimal">Optimal</string>
+    <string name="category_normal">Normal</string>
+    <string name="category_high_normal">Hoch-Normal</string>
+    <string name="category_hypertension_1">Hypertonie Grad 1</string>
+    <string name="category_hypertension_2">Hypertonie Grad 2</string>
+    <string name="category_hypertension_3">Hypertonie Grad 3</string>
 </resources>

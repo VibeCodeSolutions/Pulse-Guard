@@ -6,6 +6,8 @@ import com.example.pulseguard.data.local.PulseGuardDatabase
 import com.example.pulseguard.data.repository.BloodPressureRepository
 import com.example.pulseguard.data.repository.BloodPressureRepositoryImpl
 import com.example.pulseguard.domain.usecase.AddMeasurementUseCase
+import com.example.pulseguard.domain.usecase.GetDashboardDataUseCase
+import com.example.pulseguard.ui.screens.dashboard.DashboardViewModel
 import com.example.pulseguard.ui.screens.entry.EntryViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -47,6 +49,7 @@ val repositoryModule = module {
  */
 val useCaseModule = module {
     factory { AddMeasurementUseCase(get()) }
+    factory { GetDashboardDataUseCase(get()) }
 }
 
 /**
@@ -57,4 +60,5 @@ val useCaseModule = module {
  */
 val viewModelModule = module {
     viewModel { EntryViewModel(get()) }
+    viewModel { DashboardViewModel(get()) }
 }

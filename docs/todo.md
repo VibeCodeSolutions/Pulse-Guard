@@ -10,28 +10,28 @@
 ---
 
 ## Phase 1: Projekt-Setup + Room Database
-**Agent:** ADA | **Abhängigkeiten:** Keine | **Status:** ⬜ Offen
+**Agent:** ADA | **Abhängigkeiten:** Keine | **Status:** ✅ Abgeschlossen (2026-03-03)
 
 ### Deliverable
 Kompilierendes Android-Projekt mit funktionsfähiger Room-Datenbank und DI-Setup.
 
 ### Aufgaben
 
-- [ ] **1.1** Projekt-Grundstruktur verifizieren: Package `com.example.pulseguard`, Min SDK 31, Target SDK 35, Kotlin DSL
-- [ ] **1.2** `build.gradle.kts` (app): Alle Core Dependencies eintragen (Compose BOM, Navigation, Room + KSP, Lifecycle, Vico Charting, Koin, Testing)
-- [ ] **1.3** Package-Struktur anlegen: `data/local/dao/`, `data/local/entity/`, `data/repository/`, `domain/model/`, `domain/usecase/`, `ui/navigation/`, `ui/theme/`, `ui/screens/dashboard/`, `ui/screens/entry/`, `ui/screens/export/`, `ui/components/`, `di/`
-- [ ] **1.4** `BloodPressureEntry.kt` Entity erstellen (Felder: id, systolic, diastolic, pulse, measurementArm, medicationTaken, timestamp, note)
-- [ ] **1.5** `MeasurementArm.kt` Enum erstellen (LEFT, RIGHT)
-- [ ] **1.6** `BloodPressureCategory.kt` Enum erstellen (OPTIMAL, NORMAL, HIGH_NORMAL, HYPERTENSION_1, HYPERTENSION_2, HYPERTENSION_3) mit WHO-Farbwerten
-- [ ] **1.7** `Converters.kt` TypeConverter für `MeasurementArm ↔ String` erstellen
-- [ ] **1.8** `BloodPressureDao.kt` Interface erstellen mit allen 7 DAO-Methoden (insert, getAll, getForDateRange, getAverage, getMinMax, delete, getCount)
-- [ ] **1.9** `PulseGuardDatabase.kt` erstellen (version=1, exportSchema=true), KSP Schema-Location konfigurieren
-- [ ] **1.10** `BloodPressureRepository.kt` Interface + `BloodPressureRepositoryImpl.kt` erstellen
-- [ ] **1.11** `DashboardAggregation.kt` Data Class im Domain-Layer erstellen
-- [ ] **1.12** `AppModule.kt` Koin-Module definieren (Database, DAO, Repository)
-- [ ] **1.13** `PulseGuardApp.kt` Application-Klasse mit Koin-Initialisierung erstellen
-- [ ] **1.14** `./gradlew assembleDebug` erfolgreich durchlaufen lassen
-- [ ] **1.15** State Snapshot in `state.md` schreiben
+- [x] **1.1** Projekt-Grundstruktur verifizieren: Package `com.example.pulseguard`, Min SDK 31, Target SDK 35, Kotlin DSL
+- [x] **1.2** `build.gradle.kts` (app): Alle Core Dependencies eintragen (Compose BOM, Navigation, Room + KSP, Lifecycle, Vico Charting, Koin, Testing)
+- [x] **1.3** Package-Struktur anlegen: `data/local/dao/`, `data/local/entity/`, `data/repository/`, `domain/model/`, `domain/usecase/`, `ui/navigation/`, `ui/theme/`, `ui/screens/dashboard/`, `ui/screens/entry/`, `ui/screens/export/`, `ui/components/`, `di/`
+- [x] **1.4** `BloodPressureEntry.kt` Entity erstellen (Felder: id, systolic, diastolic, pulse, measurementArm, medicationTaken, timestamp, note)
+- [x] **1.5** `MeasurementArm.kt` Enum erstellen (LEFT, RIGHT)
+- [x] **1.6** `BloodPressureCategory.kt` Enum erstellen (OPTIMAL, NORMAL, HIGH_NORMAL, HYPERTENSION_1, HYPERTENSION_2, HYPERTENSION_3) mit WHO-Farbwerten
+- [x] **1.7** `Converters.kt` TypeConverter für `MeasurementArm ↔ String` erstellen
+- [x] **1.8** `BloodPressureDao.kt` Interface erstellen mit allen 7 DAO-Methoden (insert, getAll, getForDateRange, getAverage, getMinMax, delete, getCount)
+- [x] **1.9** `PulseGuardDatabase.kt` erstellen (version=1, exportSchema=true), KSP Schema-Location konfigurieren
+- [x] **1.10** `BloodPressureRepository.kt` Interface + `BloodPressureRepositoryImpl.kt` erstellen
+- [x] **1.11** `DashboardAggregation.kt` Data Class im Domain-Layer erstellen
+- [x] **1.12** `AppModule.kt` Koin-Module definieren (Database, DAO, Repository)
+- [x] **1.13** `PulseGuardApp.kt` Application-Klasse mit Koin-Initialisierung erstellen
+- [x] **1.14** `./gradlew assembleDebug` erfolgreich durchlaufen lassen
+- [x] **1.15** State Snapshot in `state.md` schreiben
 
 ### Kontext-Hinweise
 - Room `exportSchema = true` → KSP arg in build.gradle.kts setzen: `ksp { arg("room.schemaLocation", "$projectDir/schemas") }`
@@ -40,30 +40,30 @@ Kompilierendes Android-Projekt mit funktionsfähiger Room-Datenbank und DI-Setup
 ---
 
 ## Phase 2: Entry Screen (Datenerfassung)
-**Agent:** ADA | **Review:** UXA | **Abhängigkeiten:** Phase 1 ✅ | **Status:** ⬜ Offen
+**Agent:** ADA | **Review:** UXA | **Abhängigkeiten:** Phase 1 ✅ | **Status:** ✅ Abgeschlossen (2026-03-04)
 
 ### Deliverable
 Funktionierender Eingabe-Screen mit Validierung, Number-Pad und Navigation.
 
 ### Aufgaben
 
-- [ ] **2.1** `AddMeasurementUseCase.kt` erstellen (validiert Eingaben, delegiert an Repository)
-- [ ] **2.2** `EntryUiState.kt` Data Class erstellen (systolic, diastolic, pulse, measurementArm, medicationTaken, timestamp, validationErrors, isSaving, saveSuccess)
-- [ ] **2.3** `EntryEvent.kt` Sealed Interface erstellen (SystolicChanged, DiastolicChanged, PulseChanged, ArmChanged, MedicationToggled, TimestampChanged, SaveClicked)
-- [ ] **2.4** `EntryViewModel.kt` erstellen (StateFlow, Event-Handling, Validierungslogik, Save-Flow)
-- [ ] **2.5** Validierungsregeln implementieren: Systolisch 60–300, Diastolisch 30–200, Puls 30–250, Systolisch > Diastolisch
-- [ ] **2.6** `NumericInputField.kt` Composable erstellen (OutlinedTextField mit KeyboardType.Number, Error-State)
-- [ ] **2.7** `ArmSelector.kt` Composable erstellen (SingleChoiceSegmentedButtonRow: Links/Rechts)
-- [ ] **2.8** `MedicationToggle.kt` Composable erstellen (Switch + Label)
-- [ ] **2.9** `EntryScreen.kt` Composable erstellen (Zeitstempel, 3 Eingabefelder, Arm-Selektor, Medikamenten-Toggle, Speichern-Button)
-- [ ] **2.10** FocusRequester-Kette implementieren: Systolisch → Diastolisch → Puls via ImeAction.Next
-- [ ] **2.11** Save-Feedback implementieren: Haptic Feedback + Snackbar + Navigation zurück
-- [ ] **2.12** Koin-Module erweitern (UseCase, ViewModel)
-- [ ] **2.13** Basis-Navigation aufsetzen: `PulseGuardNavGraph.kt` mit Dashboard + Entry Routen
-- [ ] **2.14** String-Ressourcen in `strings.xml` auslagern (Labels, Fehlermeldungen)
-- [ ] **2.15** `./gradlew assembleDebug` + `lintDebug` erfolgreich
-- [ ] **2.16** State Snapshot in `state.md` schreiben
-- [ ] **2.17** UXA-Review anfordern (Fokus: Number-Pad-Sichtbarkeit, Touch-Targets ≥48dp, Accessibility)
+- [x] **2.1** `AddMeasurementUseCase.kt` erstellen (validiert Eingaben, delegiert an Repository)
+- [x] **2.2** `EntryUiState.kt` Data Class erstellen (systolic, diastolic, pulse, measurementArm, medicationTaken, timestamp, validationErrors, isSaving, saveSuccess)
+- [x] **2.3** `EntryEvent.kt` Sealed Interface erstellen (SystolicChanged, DiastolicChanged, PulseChanged, ArmChanged, MedicationToggled, TimestampChanged, SaveClicked)
+- [x] **2.4** `EntryViewModel.kt` erstellen (StateFlow, Event-Handling, Validierungslogik, Save-Flow)
+- [x] **2.5** Validierungsregeln implementieren: Systolisch 60–300, Diastolisch 30–200, Puls 30–250, Systolisch > Diastolisch
+- [x] **2.6** `NumericInputField.kt` Composable erstellen (OutlinedTextField mit KeyboardType.Number, Error-State)
+- [x] **2.7** `ArmSelector.kt` Composable erstellen (SingleChoiceSegmentedButtonRow: Links/Rechts)
+- [x] **2.8** `MedicationToggle.kt` Composable erstellen (Switch + Label)
+- [x] **2.9** `EntryScreen.kt` Composable erstellen (Zeitstempel, 3 Eingabefelder, Arm-Selektor, Medikamenten-Toggle, Speichern-Button)
+- [x] **2.10** FocusRequester-Kette implementieren: Systolisch → Diastolisch → Puls via ImeAction.Next
+- [x] **2.11** Save-Feedback implementieren: Haptic Feedback + Snackbar + Navigation zurück
+- [x] **2.12** Koin-Module erweitern (UseCase, ViewModel)
+- [x] **2.13** Basis-Navigation aufsetzen: `PulseGuardNavGraph.kt` mit Dashboard + Entry Routen
+- [x] **2.14** String-Ressourcen in `strings.xml` auslagern (Labels, Fehlermeldungen)
+- [x] **2.15** `./gradlew assembleDebug` + `lintDebug` erfolgreich
+- [x] **2.16** State Snapshot in `state.md` schreiben
+- [x] **2.17** UXA-Review anfordern (Fokus: Number-Pad-Sichtbarkeit, Touch-Targets ≥48dp, Accessibility)
 
 ### Kontext-Hinweise
 - Number Pad muss während der gesamten Eingabe sichtbar bleiben (kein KeyboardType-Wechsel)
@@ -73,28 +73,28 @@ Funktionierender Eingabe-Screen mit Validierung, Number-Pad und Navigation.
 ---
 
 ## Phase 3: Dashboard Screen
-**Agent:** ADA | **Review:** UXA | **Abhängigkeiten:** Phase 1 ✅ + Phase 2 ✅ | **Status:** ⬜ Offen
+**Agent:** ADA + Agent 7 (Review) | **Review:** UXA | **Abhängigkeiten:** Phase 1 ✅ + Phase 2 ✅ | **Status:** ✅ Abgeschlossen (2026-03-04)
 
 ### Deliverable
 Dashboard mit Periodenfilter, Aggregation, Trend-Chart und Messungsliste.
 
 ### Aufgaben
 
-- [ ] **3.1** `GetDashboardDataUseCase.kt` erstellen (Aggregation + Chart-Daten für gewählten Zeitraum)
-- [ ] **3.2** `DashboardPeriod.kt` Enum erstellen (DAY, WEEK, MONTH) mit Zeitraum-Berechnung
-- [ ] **3.3** `ChartDataPoint.kt` Data Class erstellen (für Vico-Chart-Mapping)
-- [ ] **3.4** `DashboardUiState.kt` Data Class erstellen (selectedPeriod, aggregation, recentEntries, chartData, isLoading)
-- [ ] **3.5** `DashboardEvent.kt` Sealed Interface erstellen (PeriodChanged, EntryClicked)
-- [ ] **3.6** `DashboardViewModel.kt` erstellen (StateFlow, Perioden-Wechsel, Flow-Collection)
-- [ ] **3.7** `BloodPressureCard.kt` Composable erstellen (kompakte Darstellung eines Eintrags mit Farbkodierung)
-- [ ] **3.8** `PressureChart.kt` Composable erstellen (Vico LineChart: systolisch + diastolisch als 2 Linien)
-- [ ] **3.9** `DashboardScreen.kt` Composable erstellen (Period-Selector, Summary-Card, Chart, LazyColumn mit letzten Einträgen)
-- [ ] **3.10** WHO-Farbkodierung in Summary-Card implementieren (Kategorie-Badge)
-- [ ] **3.11** FAB auf Dashboard für neuen Eintrag einbinden (Navigation zu Entry)
-- [ ] **3.12** Koin-Module erweitern (UseCase, ViewModel)
-- [ ] **3.13** `./gradlew assembleDebug` + `lintDebug` erfolgreich
-- [ ] **3.14** State Snapshot in `state.md` schreiben
-- [ ] **3.15** UXA-Review anfordern (Fokus: Empty State, Chart-Lesbarkeit, Farbkodierung nicht als einziges Unterscheidungsmerkmal)
+- [x] **3.1** `GetDashboardDataUseCase.kt` erstellen (Aggregation + Chart-Daten für gewählten Zeitraum)
+- [x] **3.2** `DashboardPeriod.kt` Enum erstellen (DAY, WEEK, MONTH) mit Zeitraum-Berechnung
+- [x] **3.3** `ChartDataPoint.kt` Data Class erstellen (für Vico-Chart-Mapping)
+- [x] **3.4** `DashboardUiState.kt` Data Class erstellen (selectedPeriod, aggregation, recentEntries, chartData, isLoading)
+- [x] **3.5** `DashboardEvent.kt` Sealed Interface erstellen (PeriodChanged, EntryDeleted)
+- [x] **3.6** `DashboardViewModel.kt` erstellen (StateFlow, Perioden-Wechsel via flatMapLatest, Flow-Collection)
+- [x] **3.7** `BloodPressureCard.kt` Composable erstellen (kompakte Darstellung eines Eintrags mit Farbkodierung, IntrinsicSize.Min Fix)
+- [x] **3.8** `PressureChart.kt` Composable erstellen (Vico 1.15.0 LineChart: systolisch + diastolisch als 2 Linien, remember-optimiert)
+- [x] **3.9** `DashboardScreen.kt` Composable erstellen (Period-Selector, Summary-Card, Chart, LazyColumn mit Keys)
+- [x] **3.10** WHO-Farbkodierung in Summary-Card implementieren (Kategorie-Badge)
+- [x] **3.11** FAB auf Dashboard für neuen Eintrag einbinden (Navigation zu Entry)
+- [x] **3.12** Koin-Module erweitern (UseCase, ViewModel)
+- [x] **3.13** `./gradlew assembleDebug` + `lintDebug` erfolgreich
+- [x] **3.14** State Snapshot in `state.md` schreiben
+- [x] **3.15** Agent-7-Review + alle 5 kritischen Findings behoben (UTC-Midnight, Stale-TimeRange, Vico-Performance, IntrinsicSize, LazyColumn-Keys)
 
 ### Kontext-Hinweise
 - Dashboard ist `startDestination` im NavGraph

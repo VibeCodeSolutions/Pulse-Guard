@@ -12,11 +12,11 @@
 
 | Feld | Wert |
 |------|------|
-| **Aktuelle Phase** | Phase 3 – Dashboard Screen |
-| **Aktiver Agent** | Agent 7 (Reviewer/Diagnostician) |
-| **Gesamtfortschritt** | 2 / 6 Phasen abgeschlossen |
+| **Aktuelle Phase** | Phase 4 – Export Engine |
+| **Aktiver Agent** | ADA |
+| **Gesamtfortschritt** | 3 / 6 Phasen abgeschlossen |
 | **Letztes Update** | 2026-03-04 |
-| **Nächste Phase** | Phase 3 |
+| **Nächste Phase** | Phase 4 |
 | **Blocker** | Keine |
 
 ---
@@ -27,7 +27,7 @@
 |-------|-------|-------|--------|-------|
 | Phase 1 | Projekt-Setup + Room DB | ADA | ✅ Abgeschlossen | 2026-03-03 |
 | Phase 2 | Entry Screen | ADA + Agent 7 | ✅ Abgeschlossen | 2026-03-04 |
-| Phase 3 | Dashboard Screen | ADA | ⬜ Offen | – |
+| Phase 3 | Dashboard Screen | ADA + Agent 7 | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 4 | Export Engine | ADA | ⬜ Offen | – |
 | Phase 5 | Polish | UXA + ADA | ⬜ Offen | – |
 | Phase 6 | Testing | QAA | ⬜ Offen | – |
@@ -37,6 +37,59 @@
 ---
 
 ## 3. Aktueller State Snapshot
+
+### State Snapshot: Phase 3 – Dashboard Screen
+**Agent:** ADA + Agent 7 (Code Review)
+**Datum:** 2026-03-04
+**Status:** COMPLETE
+
+#### Erledigte Arbeit
+- `domain/model/DashboardPeriod.kt` – Enum DAY/WEEK/MONTH + `toTimeRange()` (UTC-Midnight-konform)
+- `domain/model/ChartDataPoint.kt` – Data Class für Vico-Chart-Mapping
+- `domain/usecase/GetDashboardDataUseCase.kt` – reaktiv via `midnightTickerFlow() + flatMapLatest`; kein Full-DB-Scan
+- `ui/screens/dashboard/DashboardUiState.kt` – immutable State mit isEmpty-Computed-Property
+- `ui/screens/dashboard/DashboardEvent.kt` – sealed interface (PeriodChanged, EntryDeleted)
+- `ui/screens/dashboard/DashboardViewModel.kt` – UDF-konform, `flatMapLatest` auf `_selectedPeriod`
+- `ui/screens/dashboard/DashboardScreen.kt` – Period-Selector, Summary-Card, PressureChart, LazyColumn (mit Keys)
+- `ui/components/BloodPressureCard.kt` – Farbstreifen-Fix via `Modifier.height(IntrinsicSize.Min)`
+- `ui/components/PressureChart.kt` – Vico 1.15.0 LineChart, `lineSpec` mit `remember` optimiert
+- `di/AppModule.kt` – `useCaseModule` + `viewModelModule` ergänzt
+- `res/values/strings.xml` – alle Dashboard-/Chart-Strings ergänzt
+
+#### Code-Review-Fixes (Agent 7 → ADA)
+1. **[CRITICAL] UTC-Midnight-Invariante** – `toTimeRange()` nutzt jetzt `LocalDate.now(ZoneOffset.UTC)` + `atStartOfDay(ZoneOffset.UTC).toInstant()`
+2. **[CRITICAL] Stale Time Range Bug** – `observe()` abonniert intern einen `midnightTickerFlow` via `flatMapLatest`; Zeitfenster aktualisiert sich ohne User-Interaktion täglich automatisch; ViewModel-API unverändert
+3. **[WARNING] Vico Performance** – `lineSpec()`-Instanzen in `remember(color)` gewrappt; stabile Objekte als Input für `lineChart()`
+4. **[REFACTOR] BloodPressureCard Strip** – äußere Row erhält `Modifier.height(IntrinsicSize.Min)`; `Box.fillMaxHeight()` wird jetzt korrekt aufgelöst
+5. **[REFACTOR] LazyColumn Keys** – `items(..., key = { it.id ?: it.timestamp })` für stabile Item-Identität bei Listenoperationen
+
+#### Neuer Code-Stand
+**Packages:**
+- `com.example.pulseguard.domain.model` → `DashboardPeriod`, `ChartDataPoint`
+- `com.example.pulseguard.domain.usecase` → `GetDashboardDataUseCase`, `DashboardData`
+- `com.example.pulseguard.ui.screens.dashboard` → `DashboardUiState`, `DashboardEvent`, `DashboardViewModel`, `DashboardScreen`
+- `com.example.pulseguard.ui.components` → `BloodPressureCard`, `PressureChart`
+
+**Abhängigkeiten:** Vico `1.15.0` (bereits in Phase 1 eingetragen, keine neuen Libs)
+
+#### Offene Punkte / Known Issues
+- `DashboardEvent.EntryDeleted` ist als Stub implementiert (`Unit`); Delete-Logik folgt in Phase 4
+- UXA-Review (Chart-Lesbarkeit, Empty State Illustration) steht noch aus
+
+#### Kontext für nächsten Agenten (Phase 4 – ADA)
+- **Delete-Eintrag:** `BloodPressureRepository` benötigt `delete(entry: BloodPressureEntry)` oder `deleteById(id: Long)` für Phase 4; Event-Handler in `DashboardViewModel.onEvent(EntryDeleted)` ist vorbereitet
+- **Navigation:** `NavRoutes.EXPORT` ist in `NavRoutes.kt` als Konstante zu ergänzen; Dashboard-FAB führt zu Entry, Export per TopBar-Aktion geplant
+- **`DashboardData.period`:** Das Feld ist in der `combine`-Closure verfügbar und wird direkt in `DashboardUiState.selectedPeriod` übernommen
+
+#### Verifizierung
+- assembleDebug: ⚠️ Lokal auszuführen
+- lintDebug: ⚠️ Lokal auszuführen
+- testDebugUnitTest: ⚠️ Lokal auszuführen
+- Anzahl neuer Tests: 0 (Phase 6 dediziert)
+
+---
+
+## 4. Archivierter Snapshot: Phase 2
 
 ### State Snapshot: Phase 2 – Entry Screen (Datenerfassung)
 **Agent:** ADA + Agent 7
@@ -78,7 +131,8 @@
 
 ---
 
-## 5. Snapshot-Archiv (Phase 1)
+## 5. Snapshot-Archiv (Phase 1 + Phase 2)
+
 
 ### State Snapshot: Phase 1 – Projekt-Setup + Room Database
 **Agent:** ADA
