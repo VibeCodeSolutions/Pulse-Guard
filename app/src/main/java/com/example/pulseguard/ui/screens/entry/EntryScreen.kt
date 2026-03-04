@@ -48,7 +48,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -89,6 +91,7 @@ import java.time.format.FormatStyle
 @Composable
 fun EntryScreen(
     onNavigateBack: () -> Unit,
+    zoneId: ZoneId = ZoneId.systemDefault(),
     viewModel: EntryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -104,17 +107,8 @@ fun EntryScreen(
     // ── Date / Time picker dialog state (local UI state only) ─────────────
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-
-    val initialDateTime = remember(uiState.timestamp) {
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(uiState.timestamp), ZoneId.systemDefault())
-    }
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = uiState.timestamp,
-    )
-    val timePickerState = rememberTimePickerState(
-        initialHour = initialDateTime.hour,
-        initialMinute = initialDateTime.minute,
-    )
+    // Bridges the date chosen in DatePickerDialog into the subsequent TimePickerDialog.
+    var selectedDateMillis by remember(uiState.timestamp) { mutableStateOf(uiState.timestamp) }
 
     // ── Side effects ──────────────────────────────────────────────────────
     val saveSuccessMessage = stringResource(R.string.snackbar_save_success)
@@ -137,10 +131,14 @@ fun EntryScreen(
 
     // ── Date picker dialog ────────────────────────────────────────────────
     if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = uiState.timestamp,
+        )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
+                    selectedDateMillis = datePickerState.selectedDateMillis ?: uiState.timestamp
                     showDatePicker = false
                     showTimePicker = true
                 }) { Text(stringResource(R.string.dialog_next)) }
@@ -157,17 +155,23 @@ fun EntryScreen(
 
     // ── Time picker dialog ────────────────────────────────────────────────
     if (showTimePicker) {
+        val initialTime = remember {
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(uiState.timestamp), zoneId)
+        }
+        val timePickerState = rememberTimePickerState(
+            initialHour = initialTime.hour,
+            initialMinute = initialTime.minute,
+        )
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
             title = { Text(stringResource(R.string.dialog_select_time)) },
             confirmButton = {
                 TextButton(onClick = {
-                    val selectedDateMillis = datePickerState.selectedDateMillis ?: uiState.timestamp
                     val combinedMillis = Instant.ofEpochMilli(selectedDateMillis)
                         .atZone(ZoneOffset.UTC)
                         .toLocalDate()
                         .atTime(timePickerState.hour, timePickerState.minute)
-                        .atZone(ZoneId.systemDefault())
+                        .atZone(zoneId)
                         .toInstant()
                         .toEpochMilli()
                     viewModel.onEvent(EntryEvent.TimestampChanged(combinedMillis))
@@ -214,6 +218,7 @@ fun EntryScreen(
                 timestamp = uiState.timestamp,
                 onClick = { showDatePicker = true },
                 modifier = Modifier.fillMaxWidth(),
+                zoneId = zoneId,
             )
 
             // 2a. Systolisch
@@ -313,27 +318,32 @@ fun EntryScreen(
  * Clickable card showing the formatted measurement timestamp.
  *
  * Tapping the card opens the date/time picker flow.
+ *
+ * @param zoneId Time zone used for formatting [timestamp]. Matches the zone passed to [EntryScreen].
  */
 @Composable
 private fun TimestampRow(
     timestamp: Long,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    zoneId: ZoneId = ZoneId.systemDefault(),
 ) {
-    val formatted = remember(timestamp) {
+    val formatted = remember(timestamp, zoneId) {
         val localDateTime = LocalDateTime.ofInstant(
             Instant.ofEpochMilli(timestamp),
-            ZoneId.systemDefault(),
+            zoneId,
         )
         DateTimeFormatter
             .ofLocalizedDateTime(FormatStyle.MEDIUM)
             .format(localDateTime)
     }
 
+    val label = stringResource(R.string.label_measurement_time)
     OutlinedCard(
         onClick = onClick,
         modifier = modifier.semantics {
-            contentDescription = formatted
+            contentDescription = "$label: $formatted"
+            role = Role.Button
         },
     ) {
         Row(

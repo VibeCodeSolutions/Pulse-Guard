@@ -4,29 +4,27 @@ package com.example.pulseguard.domain.model
 /**
  * WHO/ESH blood pressure classification categories.
  *
- * Each category holds a hex colour string for UI colour-coding.
  * Thresholds follow the ESH 2023 hypertension guidelines.
- *
- * @property colorHex Hex colour string (e.g. `"#4CAF50"`) for visual representation.
+ * UI colour mapping lives in the presentation layer (`BloodPressureCategory.toColor()`).
  */
-enum class BloodPressureCategory(val colorHex: String) {
+enum class BloodPressureCategory {
     /** Optimal: systolic < 120 AND diastolic < 80. */
-    OPTIMAL("#4CAF50"),
+    OPTIMAL,
 
     /** Normal: systolic 120–129 OR diastolic 80–84. */
-    NORMAL("#8BC34A"),
+    NORMAL,
 
     /** High-Normal: systolic 130–139 OR diastolic 85–89. */
-    HIGH_NORMAL("#FFC107"),
+    HIGH_NORMAL,
 
     /** Hypertension Grade 1: systolic 140–159 OR diastolic 90–99. */
-    HYPERTENSION_1("#FF9800"),
+    HYPERTENSION_1,
 
     /** Hypertension Grade 2: systolic 160–179 OR diastolic 100–109. */
-    HYPERTENSION_2("#F44336"),
+    HYPERTENSION_2,
 
     /** Hypertension Grade 3: systolic ≥ 180 OR diastolic ≥ 110. */
-    HYPERTENSION_3("#B71C1C");
+    HYPERTENSION_3;
 
     companion object {
         /**

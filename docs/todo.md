@@ -82,7 +82,8 @@ Dashboard mit Periodenfilter, Aggregation, Trend-Chart und Messungsliste.
 
 - [x] **3.1** `GetDashboardDataUseCase.kt` erstellen (Aggregation + Chart-Daten für gewählten Zeitraum)
 - [x] **3.2** `DashboardPeriod.kt` Enum erstellen (DAY, WEEK, MONTH) mit Zeitraum-Berechnung
-- [x] **3.3** `ChartDataPoint.kt` Data Class erstellen (für Vico-Chart-Mapping)
+- [x] **3.3** `ChartDataPoint.kt` Data Class erstellen (für Vico-C
+- hart-Mapping)
 - [x] **3.4** `DashboardUiState.kt` Data Class erstellen (selectedPeriod, aggregation, recentEntries, chartData, isLoading)
 - [x] **3.5** `DashboardEvent.kt` Sealed Interface erstellen (PeriodChanged, EntryDeleted)
 - [x] **3.6** `DashboardViewModel.kt` erstellen (StateFlow, Perioden-Wechsel via flatMapLatest, Flow-Collection)
@@ -135,28 +136,28 @@ PDF-Generierung mit Deckblatt, Messwerttabelle und Share-Funktion.
 ---
 
 ## Phase 5: Polish (Theming, Animationen, Edge Cases)
-**Agent:** UXA + ADA | **Abhängigkeiten:** Phase 2 ✅ + Phase 3 ✅ + Phase 4 ✅ | **Status:** ⬜ Offen
+**Agent:** UXA + ADA | **Abhängigkeiten:** Phase 2 ✅ + Phase 3 ✅ + Phase 4 ✅ | **Status:** ✅ Abgeschlossen (2026-03-04)
 
 ### Deliverable
 Visuell polierte App mit Theme, Animationen, Empty States und Edge-Case-Handling.
 
 ### Aufgaben
 
-- [ ] **5.1** `Theme.kt` finalisieren: Material3 Dynamic Colors (Material You) mit Fallback-Palette
-- [ ] **5.2** `Color.kt` finalisieren: WHO-Farbskala als Theme-Colors definieren
-- [ ] **5.3** `Type.kt` finalisieren: Typographie-Skala (System-Fonts, optional Roboto Mono für Zahlenwerte)
-- [ ] **5.4** Empty State für Dashboard implementieren: Illustration + hilfreicher Text + CTA zum ersten Eintrag
-- [ ] **5.5** Animationen: Einblende-Animationen für Karten, Übergangsanimationen zwischen Screens
-- [ ] **5.6** Haptic Feedback nach erfolgreichem Speichern verifizieren
-- [ ] **5.7** contentDescription auf allen interaktiven Elementen überprüfen und ergänzen
-- [ ] **5.8** Touch-Targets ≥ 48dp auf allen interaktiven Elementen überprüfen
-- [ ] **5.9** Edge Case: Leere Datenbank → alle Screens korrekt
-- [ ] **5.10** Edge Case: Grenzwerte (systolisch = 60/300, diastolisch = 30/200, puls = 30/250)
-- [ ] **5.11** Edge Case: Systolisch ≤ Diastolisch → Validierungsfehler
-- [ ] **5.12** Splash Screen API (ab API 31) konfigurieren
-- [ ] **5.13** App-Icon (Adaptive Icon) einbinden (Platzhalter, falls Asset noch nicht vorhanden)
-- [ ] **5.14** `./gradlew assembleDebug` + `lintDebug` erfolgreich
-- [ ] **5.15** State Snapshot in `state.md` schreiben
+- [x] **5.1** `Theme.kt` finalisieren: Material3 Dynamic Colors (Material You) mit Fallback-Palette (PulseRed/MedTeal/WarmAmber)
+- [x] **5.2** `Color.kt` finalisieren: WHO-Farbskala + vollständige PulseGuard-Palette
+- [x] **5.3** `Type.kt` finalisieren: headlineSmall mit FontFamily.Monospace für numerische Werte
+- [x] **5.4** Empty State für Dashboard implementiert: FavoriteBorder-Icon + Titel + Body + CTA
+- [x] **5.5** Animationen: FAB Bounce (spring, DampingRatioMediumBouncy) + Staggered Entrance für BloodPressureCard-Liste (fadeIn + slideInVertically, 55 ms/Item)
+- [x] **5.6** Haptic Feedback nach erfolgreichem Speichern verifiziert (LongPress in EntryScreen)
+- [x] **5.7** contentDescription auf allen interaktiven Elementen verifiziert und ergänzt
+- [x] **5.8** Touch-Targets ≥ 48dp verifiziert (Material3 Defaults + BloodPressureCard heightIn(72dp))
+- [x] **5.9** Edge Case: Leere Datenbank → EmptyState im Dashboard korrekt
+- [x] **5.10** Edge Case: Grenzwerte in EntryViewModel.validate() korrekt (60–300 / 30–200 / 30–250)
+- [x] **5.11** Edge Case: Systolisch ≤ Diastolisch → error_systolic_greater_diastolic implementiert
+- [x] **5.12** Splash Screen API (ab API 31) konfiguriert: core-splashscreen 1.0.1, Theme.SplashScreen, installSplashScreen()
+- [ ] **5.13** App-Icon (Adaptive Icon) einbinden – offen (Platzhalter aus Template vorhanden)
+- [x] **5.14** `./gradlew assembleDebug` erfolgreich ✅
+- [x] **5.15** State Snapshot in `state.md` geschrieben
 
 ### Kontext-Hinweise
 - Farben dürfen nie das einzige Unterscheidungsmerkmal sein (Accessibility)

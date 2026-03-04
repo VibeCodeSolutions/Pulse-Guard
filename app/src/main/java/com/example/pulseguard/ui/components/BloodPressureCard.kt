@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -28,6 +27,7 @@ import com.example.pulseguard.R
 import com.example.pulseguard.data.local.entity.BloodPressureEntry
 import com.example.pulseguard.domain.model.BloodPressureCategory
 import com.example.pulseguard.domain.model.MeasurementArm
+import com.example.pulseguard.ui.theme.toColor
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -42,25 +42,26 @@ import java.time.format.FormatStyle
  * The full measurement detail is exposed via [Modifier.semantics] for screen readers.
  *
  * @param entry    The blood pressure measurement to display.
+ * @param zoneId   Time zone used for formatting the measurement timestamp. Defaults to
+ *                 [ZoneId.systemDefault]; override in tests for deterministic output.
  * @param modifier Optional [Modifier].
  */
 @Composable
 fun BloodPressureCard(
     entry: BloodPressureEntry,
+    zoneId: ZoneId = ZoneId.systemDefault(),
     modifier: Modifier = Modifier,
 ) {
     val category = remember(entry.systolic, entry.diastolic) {
         BloodPressureCategory.fromValues(entry.systolic, entry.diastolic)
     }
-    val categoryColor = remember(category) {
-        Color(android.graphics.Color.parseColor(category.colorHex))
-    }
+    val categoryColor = remember(category) { category.toColor() }
     val categoryLabel = categoryLabel(category)
 
-    val formattedDateTime = remember(entry.timestamp) {
+    val formattedDateTime = remember(entry.timestamp, zoneId) {
         val ldt = LocalDateTime.ofInstant(
             Instant.ofEpochMilli(entry.timestamp),
-            ZoneId.systemDefault(),
+            zoneId,
         )
         DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(ldt)
     }

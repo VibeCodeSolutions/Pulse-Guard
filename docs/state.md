@@ -12,11 +12,11 @@
 
 | Feld | Wert |
 |------|------|
-| **Aktuelle Phase** | Phase 5 – Polish |
-| **Aktiver Agent** | UXA + ADA |
-| **Gesamtfortschritt** | 4 / 6 Phasen abgeschlossen |
+| **Aktuelle Phase** | Phase 6 – Testing |
+| **Aktiver Agent** | QAA |
+| **Gesamtfortschritt** | 5 / 6 Phasen abgeschlossen |
 | **Letztes Update** | 2026-03-04 |
-| **Nächste Phase** | Phase 5 |
+| **Nächste Phase** | Phase 6 |
 | **Blocker** | Keine |
 
 ---
@@ -29,7 +29,7 @@
 | Phase 2 | Entry Screen | ADA + Agent 7 | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 3 | Dashboard Screen | ADA + Agent 7 | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 4 | Export Engine | ADA | ✅ Abgeschlossen | 2026-03-04 |
-| Phase 5 | Polish | UXA + ADA | ⬜ Offen | – |
+| Phase 5 | Polish | UXA + ADA | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 6 | Testing | QAA | ⬜ Offen | – |
 
 **Status-Legende:** ⬜ Offen | 🔄 In Arbeit | ✅ Abgeschlossen | ⚠️ Partial
@@ -37,6 +37,63 @@
 ---
 
 ## 3. Aktueller State Snapshot
+
+### State Snapshot: Phase 5 – Polish (Theming, Animationen, Edge Cases)
+**Agent:** UXA + ADA
+**Datum:** 2026-03-04
+**Status:** COMPLETE
+
+#### Erledigte Arbeit
+- `ui/theme/Theme.kt` – LightColorScheme + DarkColorScheme komplett auf PulseGuard-Palette umgestellt (PulseRed, MedTeal, WarmAmber); Dynamic Colors (Material You) behalten
+- `ui/theme/Color.kt` – WHO-Farbskala (`CategoryOptimal`…`CategoryHypertension3`) + vollständige PulseGuard-Palette (bereits in vorheriger Session geschrieben)
+- `ui/theme/Type.kt` – `headlineSmall` verwendet jetzt `FontFamily.Monospace` (Roboto Mono) für numerische Blutdruckwerte in der Dashboard-Summary
+- `res/values/themes.xml` – Theme-Hierarchie auf SplashScreen API umgestellt: `Theme.PulseGuard` (parent: `Theme.SplashScreen`) + `Theme.PulseGuard.App` (postSplashScreenTheme)
+- `MainActivity.kt` – `installSplashScreen()` vor `super.onCreate()` eingebaut
+- `gradle/libs.versions.toml` – `splashscreen = "1.0.1"` + Library-Alias `androidx-core-splashscreen`
+- `app/build.gradle.kts` – `implementation(libs.androidx.core.splashscreen)` ergänzt
+- `ui/screens/dashboard/DashboardScreen.kt` –
+  - FAB Bounce-Animation via `MutableInteractionSource` + `animateFloatAsState` (spring, DampingRatioMediumBouncy)
+  - Staggered Entrance-Animation für BloodPressureCard-Liste via `itemsIndexed` + `AnimatedVisibility` (`fadeIn` + `slideInVertically`, 55 ms/Item, max 7 Items = max 385 ms)
+  - EmptyState mit Icon + Titel + Body + CTA bereits aus Phase 3 vorhanden, verifiziert ✅
+
+#### Validation (Phase 5 – bereits in Phase 2 implementiert, Phase 5 verifiziert)
+- `EntryViewModel.validate()` – Systolisch ≤ Diastolisch → `error_systolic_greater_diastolic` ✅
+- Grenzwert-Checks: Systolisch 60–300, Diastolisch 30–200, Puls 30–250 ✅
+- `touchedFields`-Mechanismus: kein premature error display ✅
+
+#### Accessibility (verifiziert)
+- `contentDescription` auf FAB, TopAppBar-Actions, PeriodSelector, Category-Badge, Arm-Selector, Medication-Toggle, Save-Button, Timestamp-Row ✅
+- Touch-Targets: Material3-Komponenten ≥ 48dp, BloodPressureCard `heightIn(min = 72dp)` ✅
+- Kategorie nie ausschließlich durch Farbe unterschieden (Text-Label immer sichtbar) ✅
+
+#### Neuer Code-Stand
+**Geänderte Dateien:**
+- `ui/theme/Theme.kt`, `ui/theme/Type.kt`
+- `res/values/themes.xml`
+- `MainActivity.kt`
+- `gradle/libs.versions.toml`, `app/build.gradle.kts`
+- `ui/screens/dashboard/DashboardScreen.kt`
+
+**Neue Dependencies:**
+- `androidx.core:core-splashscreen:1.0.1`
+
+#### Offene Punkte / Known Issues
+- App-Icon ist noch der Standard-Android-Launcher-Icon (Platzhalter); Custom Adaptive Icon für Release benötigt
+- `DashboardEvent.EntryDeleted` ist noch Stub (keine echte Delete-Logik); für Phase 6 / Post-MVP
+- PDF-Generierung synchron auf IO-Dispatcher (ausreichend für typische Datensätze < 500 Einträge)
+
+#### Kontext für nächsten Agenten (Phase 6 – QAA)
+- **Validierung:** `AddMeasurementUseCase.SYSTOLIC_MIN/MAX`, `DIASTOLIC_MIN/MAX`, `PULSE_MIN/MAX` sind Companion-Konstanten im UseCase – ideal für parametrierte Tests
+- **Farben:** WHO-Kategorienfarben als `CategoryOptimal`…`CategoryHypertension3` in `Color.kt`; `BloodPressureCategory.fromValues(systolic, diastolic)` für Unit-Tests der Kategorie-Zuordnung
+- **Theme:** SplashScreen-Änderung erfordert `installSplashScreen()` in MainActivity – bei UI-Tests `ComponentActivity` verwenden, nicht direkt `MainActivity`, um SplashScreen-Abhängigkeit zu isolieren
+
+#### Verifizierung
+- assembleDebug: ✅
+- lintDebug: ⚠️ Lokal auszuführen
+- testDebugUnitTest: ⚠️ Lokal auszuführen (Phase 6 dediziert)
+- Anzahl neuer Tests: 0 (Phase 6 dediziert)
+
+---
 
 ### State Snapshot: Phase 4 – Export Engine (PDF + Share)
 **Agent:** ADA

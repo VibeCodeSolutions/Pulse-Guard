@@ -10,8 +10,11 @@ import androidx.compose.ui.unit.sp
 /**
  * Application typography scale.
  *
- * Uses system default fonts (Roboto) for Phase 2. Roboto Mono for numeric
- * display values can be added in Phase 5 (Polish).
+ * Body, title and label styles use the system default (Roboto / device sans-serif)
+ * for everyday text. [headlineSmall] uses [FontFamily.Monospace] (Roboto Mono on
+ * most Android devices) so that numeric values – e.g. average systolic/diastolic
+ * readings in the Dashboard Summary Card – are displayed in fixed-width glyphs,
+ * improving columnar alignment and readability at a glance.
  */
 val Typography = Typography(
     bodyLarge = TextStyle(
@@ -48,5 +51,13 @@ val Typography = Typography(
         fontSize = 11.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
+    ),
+    // Monospace for numeric display values (Dashboard summary card avg readings).
+    headlineSmall = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 24.sp,
+        lineHeight = 32.sp,
+        letterSpacing = 0.sp,
     ),
 )

@@ -29,6 +29,8 @@
     <string name="cd_navigate_back">Zurück</string>
     <string name="cd_arm_selector">Messarm auswählen</string>
     <string name="cd_medication_toggle">Medikament-Toggle: Medikament eingenommen</string>
+    <string name="cd_medication_state_taken">Eingenommen</string>
+    <string name="cd_medication_state_not_taken">Nicht eingenommen</string>
     <string name="cd_save_button">Messung speichern</string>
     <string name="cd_add_entry">Neue Messung hinzufügen</string>
 

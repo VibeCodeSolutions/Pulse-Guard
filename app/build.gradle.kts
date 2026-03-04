@@ -92,6 +92,9 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
+    // Splash Screen API (Android 12+ / API 31+)
+    implementation(libs.androidx.core.splashscreen)
+
     // Unit Tests
     testImplementation(libs.junit)
     testImplementation(libs.arch.core.testing)

@@ -17,6 +17,8 @@ room = "2.6.1"
 vico = "1.15.0"
 # Koin DI
 koin = "3.5.6"
+# Splash Screen
+splashscreen = "1.0.1"
 # Testing extras
 archCoreTesting = "2.2.0"
 coroutinesTest = "1.8.1"
@@ -62,6 +64,9 @@ vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", ve
 # Koin DI
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+
+# Splash Screen
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

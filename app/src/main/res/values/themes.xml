@@ -1,7 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.PulseGuard" parent="android:Theme.Material.NoActionBar">
-        <!-- Status bar color. -->
+    <!--
+        Entry-point theme declared as android:theme in AndroidManifest.xml.
+        Must extend Theme.SplashScreen so the Splash Screen API can read the
+        splash window attributes before the activity is fully created.
+        The activity transitions to Theme.PulseGuard.App as soon as the splash exits.
+    -->
+    <style name="Theme.PulseGuard" parent="Theme.SplashScreen">
+        <item name="postSplashScreenTheme">@style/Theme.PulseGuard.App</item>
+    </style>
+
+    <!-- Real application theme applied programmatically after the splash screen exits. -->
+    <style name="Theme.PulseGuard.App" parent="android:Theme.Material.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     </style>

@@ -1,6 +1,15 @@
 // com.example.pulseguard.ui.screens.dashboard.DashboardScreen
 package com.example.pulseguard.ui.screens.dashboard
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -32,10 +41,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -50,6 +63,8 @@ import com.example.pulseguard.domain.model.DashboardPeriod
 import com.example.pulseguard.ui.components.BloodPressureCard
 import com.example.pulseguard.ui.components.PressureChart
 import com.example.pulseguard.ui.theme.PulseGuardTheme
+import com.example.pulseguard.ui.theme.toColor
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -58,6 +73,12 @@ import org.koin.androidx.compose.koinViewModel
  *
  * All state comes from [DashboardViewModel] via a reactive [StateFlow]; no business
  * logic lives in this composable.
+ *
+ * Includes:
+ * - FAB bounce animation via [MutableInteractionSource] + [animateFloatAsState].
+ * - Staggered entrance animation on the [BloodPressureCard] list via
+ *   [AnimatedVisibility] + [LaunchedEffect] delay, capped at 7 visible items
+ *   (max 385 ms stagger) to keep the animation snappy regardless of list size.
  *
  * @param onAddEntry Lambda invoked when the user taps the FAB to add a new entry.
  * @param onExport   Lambda invoked when the user taps the TopAppBar export action.
@@ -71,6 +92,18 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // ── FAB bounce animation ───────────────────────────────────────────────
+    val fabInteractionSource = remember { MutableInteractionSource() }
+    val isFabPressed by fabInteractionSource.collectIsPressedAsState()
+    val fabScale by animateFloatAsState(
+        targetValue = if (isFabPressed) 0.88f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
+        label = "fab_scale",
+    )
 
     Scaffold(
         topBar = {
@@ -87,7 +120,11 @@ fun DashboardScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddEntry) {
+            FloatingActionButton(
+                onClick = onAddEntry,
+                modifier = Modifier.scale(fabScale),
+                interactionSource = fabInteractionSource,
+            ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
                     contentDescription = stringResource(R.string.cd_add_entry),
@@ -155,11 +192,31 @@ fun DashboardScreen(
                         )
                     }
 
-                    items(uiState.recentEntries, key = { it.id ?: it.timestamp }) { entry ->
-                        BloodPressureCard(
-                            entry = entry,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                    // ── Staggered entrance animation ───────────────────────
+                    itemsIndexed(
+                        items = uiState.recentEntries,
+                        key = { _, item -> "${item.id}_${item.timestamp}" },
+                    ) { index, entry ->
+                        var visible by remember { mutableStateOf(false) }
+                        LaunchedEffect("${entry.id}_${entry.timestamp}") {
+                            // Cap stagger at 7 items (max 385 ms) so late list items
+                            // don't wait forever when many entries are displayed.
+                            delay(index.coerceAtMost(7) * 55L)
+                            visible = true
+                        }
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(animationSpec = tween(durationMillis = 250)) +
+                                slideInVertically(
+                                    animationSpec = tween(durationMillis = 250),
+                                    initialOffsetY = { fullHeight -> fullHeight / 4 },
+                                ),
+                        ) {
+                            BloodPressureCard(
+                                entry = entry,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                     }
 
                     item { Spacer(modifier = Modifier.height(80.dp)) }
@@ -198,7 +255,7 @@ private fun SummaryCard(
     aggregation: DashboardAggregation,
     modifier: Modifier = Modifier,
 ) {
-    val categoryColor = Color(android.graphics.Color.parseColor(aggregation.category.colorHex))
+    val categoryColor = remember(aggregation.category) { aggregation.category.toColor() }
     val categoryLabel = categoryLabel(aggregation.category)
     val badgeDescription = stringResource(R.string.cd_category_badge, categoryLabel)
 

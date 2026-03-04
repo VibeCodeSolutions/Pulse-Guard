@@ -12,22 +12,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
+    primary = PulseRed80,
+    onPrimary = PulseRed20,
+    primaryContainer = PulseRedContainerDark,
+    secondary = MedTeal80,
+    onSecondary = MedTeal20,
+    secondaryContainer = MedTealContainerDark,
+    tertiary = WarmAmber80,
+    tertiaryContainer = WarmAmberContainerDark,
+    surface = NeutralSurfaceDark,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
+    primary = PulseRed40,
+    onPrimary = PulseRed100,
+    primaryContainer = PulseRedContainer,
+    secondary = MedTeal40,
+    onSecondary = MedTeal100,
+    secondaryContainer = MedTealContainer,
+    tertiary = WarmAmber40,
+    tertiaryContainer = WarmAmberContainer,
+    surface = NeutralSurface,
 )
 
 /**
  * Root Compose theme for Pulse Guard.
  *
  * Applies Material3 Dynamic Colors (Material You) on Android 12+ (API 31+)
- * with a static fallback palette for older devices and/or preview.
+ * with a static fallback palette built from the Pulse Guard health colour system
+ * for older devices and/or Compose Previews.
+ *
+ * The static palette uses:
+ * - **Primary** – Cardiac Red ([PulseRed40] / [PulseRed80]): evokes the cardiovascular domain.
+ * - **Secondary** – Medical Teal ([MedTeal40] / [MedTeal80]): calming, clinical, trustworthy.
+ * - **Tertiary** – Warm Amber ([WarmAmber40] / [WarmAmber80]): used for high-normal warnings.
  *
  * @param darkTheme     Whether to use the dark colour scheme. Defaults to system setting.
  * @param dynamicColor  Whether to apply Material You dynamic colours. Defaults to true.
