@@ -234,6 +234,7 @@ fun EntryScreen(
                     onNext = { diastolicFocus.requestFocus() },
                 ),
                 focusRequester = systolicFocus,
+                onAutoAdvance = { diastolicFocus.requestFocus() },
             )
 
             // 2b. Diastolisch
@@ -249,6 +250,7 @@ fun EntryScreen(
                     onNext = { pulseFocus.requestFocus() },
                 ),
                 focusRequester = diastolicFocus,
+                onAutoAdvance = { pulseFocus.requestFocus() },
             )
 
             // 2c. Puls – Done triggers save

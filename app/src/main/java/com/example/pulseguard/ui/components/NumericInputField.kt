@@ -34,6 +34,8 @@ import com.example.pulseguard.ui.theme.PulseGuardTheme
  * @param keyboardActions Keyboard action callbacks (e.g. move focus on Next).
  * @param focusRequester [FocusRequester] that can programmatically request focus.
  * @param maxLength      Maximum number of digits accepted (default 3).
+ * @param onAutoAdvance  Optional callback invoked when [maxLength] digits have been entered.
+ *                       Use this to move focus to the next field automatically.
  */
 @Composable
 fun NumericInputField(
@@ -46,6 +48,7 @@ fun NumericInputField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     focusRequester: FocusRequester = FocusRequester(),
     maxLength: Int = 3,
+    onAutoAdvance: (() -> Unit)? = null,
 ) {
     OutlinedTextField(
         value = value,
@@ -53,6 +56,7 @@ fun NumericInputField(
             // Accept only digit characters up to maxLength
             if (input.length <= maxLength && input.all { it.isDigit() }) {
                 onValueChange(input)
+                if (input.length == maxLength) onAutoAdvance?.invoke()
             }
         },
         label = { Text(label) },

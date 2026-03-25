@@ -11,11 +11,14 @@ import com.example.pulseguard.data.local.entity.BloodPressureEntry
 import com.example.pulseguard.data.local.entity.MinMaxValues
 import com.example.pulseguard.domain.model.MeasurementArm
 import com.example.pulseguard.domain.usecase.GetDashboardDataUseCase
+import com.example.pulseguard.domain.usecase.DeleteMeasurementUseCase
+import kotlinx.coroutines.flow.map
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -42,9 +45,10 @@ class DashboardScreenTest : KoinTest {
         startKoin {
             modules(
                 module {
-                    single { fakeRepository }
-                    factory { GetDashboardDataUseCase(get<com.example.pulseguard.domain.repository.BloodPressureRepository>()) }
-                    viewModel { DashboardViewModel(get()) }
+                    single<com.example.pulseguard.domain.repository.BloodPressureRepository> { fakeRepository }
+                    factory { GetDashboardDataUseCase(get()) }
+                    factory { DeleteMeasurementUseCase(get()) }
+                    viewModel { DashboardViewModel(get(), get(), get()) }
                 },
             )
         }

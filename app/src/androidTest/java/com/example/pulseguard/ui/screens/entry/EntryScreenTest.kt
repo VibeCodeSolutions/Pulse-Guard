@@ -3,6 +3,7 @@ package com.example.pulseguard.ui.screens.entry
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -10,12 +11,15 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.pulseguard.domain.usecase.AddMeasurementUseCase
+import kotlinx.coroutines.flow.map
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.context.startKoin
+
 import org.koin.androidx.compose.KoinAndroidContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -134,6 +138,44 @@ class EntryScreenTest : KoinTest {
             EntryScreen(onNavigateBack = {})
         }
         composeTestRule.onNodeWithText("Rechts", substring = true).assertIsDisplayed()
+    }
+
+    // ── Auto-focus ────────────────────────────────────────────────────────
+
+    @Test
+    fun entryScreen_systolicThreeDigitsTyped_focusMovesToDiastolic() {
+        composeTestRule.setContent {
+            EntryScreen(onNavigateBack = {})
+        }
+        // Initially, systolic should have focus
+        composeTestRule.onNodeWithText("Systolisch", substring = true).assertIsFocused()
+
+        // Type 3 digits into systolic
+        composeTestRule.onNodeWithText("Systolisch", substring = true)
+            .performTextInput("120")
+
+        composeTestRule.waitForIdle()
+
+        // Diastolic should now have focus
+        composeTestRule.onNodeWithText("Diastolisch", substring = true).assertIsFocused()
+    }
+
+    @Test
+    fun entryScreen_diastolicThreeDigitsTyped_focusMovesToPulse() {
+        composeTestRule.setContent {
+            EntryScreen(onNavigateBack = {})
+        }
+        // Manually focus diastolic first
+        composeTestRule.onNodeWithText("Diastolisch", substring = true).performClick()
+
+        // Type 3 digits into diastolic
+        composeTestRule.onNodeWithText("Diastolisch", substring = true)
+            .performTextInput("080")
+
+        composeTestRule.waitForIdle()
+
+        // Pulse should now have focus
+        composeTestRule.onNodeWithText("Puls", substring = true).assertIsFocused()
     }
 }
 

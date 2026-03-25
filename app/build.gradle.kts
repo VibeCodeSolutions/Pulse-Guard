@@ -112,5 +112,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.koin.test)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
