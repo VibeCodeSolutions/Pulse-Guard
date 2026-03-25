@@ -17,4 +17,7 @@ object NavRoutes {
 
     /** PDF export screen (Phase 4). */
     const val EXPORT = "export"
+
+    /** Reminder configuration screen (Phase 8). */
+    const val REMINDER = "reminder"
 }

@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pulseguard.ui.screens.dashboard.DashboardScreen
 import com.example.pulseguard.ui.screens.entry.EntryScreen
 import com.example.pulseguard.ui.screens.export.ExportScreen
+import com.example.pulseguard.ui.screens.reminder.ReminderScreen
 
 /**
  * Root navigation graph for Pulse Guard.
@@ -68,6 +69,9 @@ fun PulseGuardNavGraph(
                     onExport = {
                         navController.navigate(NavRoutes.EXPORT)
                     },
+                    onReminders = {
+                        navController.navigate(NavRoutes.REMINDER)
+                    },
                 )
             }
 
@@ -81,6 +85,14 @@ fun PulseGuardNavGraph(
 
             composable(route = NavRoutes.EXPORT) {
                 ExportScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+
+            composable(route = NavRoutes.REMINDER) {
+                ReminderScreen(
                     onNavigateBack = {
                         navController.popBackStack()
                     },

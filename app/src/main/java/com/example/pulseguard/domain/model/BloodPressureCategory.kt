@@ -2,10 +2,38 @@
 package com.example.pulseguard.domain.model
 
 /**
- * WHO/ESH blood pressure classification categories.
+ * Blood pressure classification categories per ESC/ESH 2023 guidelines.
  *
- * Thresholds follow the ESH 2023 hypertension guidelines.
- * UI colour mapping lives in the presentation layer (`BloodPressureCategory.toColor()`).
+ * ### ESC/ESH 2023 (implemented)
+ * | Category       | Systolic (mmHg) | Diastolic (mmHg) |
+ * |----------------|-----------------|------------------|
+ * | Optimal        | < 120           | AND < 80         |
+ * | Normal         | 120–129         | OR 80–84         |
+ * | High-Normal    | 130–139         | OR 85–89         |
+ * | Hypertension 1 | 140–159         | OR 90–99         |
+ * | Hypertension 2 | 160–179         | OR 100–109       |
+ * | Hypertension 3 | >= 180          | OR >= 110        |
+ *
+ * ### AHA/ACC 2017 (American — reference only, not implemented)
+ * | Category             | Systolic (mmHg) | Diastolic (mmHg) |
+ * |----------------------|-----------------|------------------|
+ * | Normal               | < 120           | AND < 80         |
+ * | Elevated             | 120–129         | AND < 80         |
+ * | Hypertension Stage 1 | 130–139         | OR 80–89         |
+ * | Hypertension Stage 2 | >= 140          | OR >= 90         |
+ * | Hypertensive Crisis  | > 180           | AND/OR > 120     |
+ *
+ * Key differences: AHA classifies 130–139 / 80–89 as Stage 1 Hypertension
+ * (ESC/ESH: High-Normal). AHA has no "High-Normal" category and uses coarser
+ * granularity at higher ranges (single Stage 2 vs. ESC/ESH Grade 2 + 3).
+ *
+ * UI colour mapping lives in the presentation layer
+ * (`BloodPressureCategory.toColor()`).
+ *
+ * @see <a href="https://doi.org/10.1093/eurheartj/ehad192">
+ *   2023 ESH Guidelines (European Heart Journal)</a>
+ * @see <a href="https://doi.org/10.1161/HYP.0000000000000065">
+ *   2017 ACC/AHA Guideline (Hypertension)</a>
  */
 enum class BloodPressureCategory {
     /** Optimal: systolic < 120 AND diastolic < 80. */
@@ -28,11 +56,12 @@ enum class BloodPressureCategory {
 
     companion object {
         /**
-         * Determines the blood pressure category from systolic and diastolic values.
+         * Determines the blood pressure category from systolic and diastolic
+         * values per ESC/ESH 2023 classification.
          *
          * The more severe classification of the two pressures takes precedence
-         * (WHO "higher value wins" rule). Enum ordinal order maps directly to
-         * increasing severity, so `maxOf` is safe here.
+         * (ESC/ESH "higher category wins" rule). Enum ordinal order maps
+         * directly to increasing severity, so [maxOf] is safe here.
          *
          * @param systolic  Systolic pressure in mmHg.
          * @param diastolic Diastolic pressure in mmHg.

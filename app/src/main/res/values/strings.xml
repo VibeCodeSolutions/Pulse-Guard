@@ -62,6 +62,9 @@
     <string name="dashboard_legend_diastolic">Diastolisch</string>
 
     <!-- Dashboard: delete / undo -->
+    <string name="dialog_delete_title">Eintrag löschen?</string>
+    <string name="dialog_delete_message">Möchtest du diesen Blutdruck-Eintrag wirklich löschen?</string>
+    <string name="dialog_delete_confirm">Löschen</string>
     <string name="snackbar_entry_deleted">Eintrag gelöscht</string>
     <string name="snackbar_action_undo">Rückgängig</string>
 
@@ -70,6 +73,7 @@
     <string name="cd_period_selector">Zeitraum auswählen</string>
     <string name="cd_category_badge">Kategorie: %s</string>
     <string name="cd_delete_entry">Eintrag löschen</string>
+    <string name="cd_medication_taken">Medikament eingenommen</string>
 
     <!-- Export Screen -->
     <string name="export_screen_title">PDF Export</string>
@@ -94,6 +98,28 @@
     <string name="cd_end_date_picker">Enddatum auswählen</string>
     <string name="cd_generate_pdf">PDF-Bericht generieren</string>
     <string name="cd_share_pdf">Erzeugtes PDF teilen</string>
+
+    <!-- Accessibility: Reminders -->
+    <string name="cd_reminder_action">Erinnerungen verwalten</string>
+
+    <!-- Reminder Screen -->
+    <string name="reminder_screen_title">Erinnerungen</string>
+    <string name="reminder_add">Neue Erinnerung</string>
+    <string name="reminder_delete">Erinnerung löschen</string>
+    <string name="reminder_dialog_add_title">Neue Erinnerung</string>
+    <string name="reminder_dialog_edit_title">Erinnerung bearbeiten</string>
+    <string name="reminder_label_hint">Bezeichnung</string>
+    <string name="reminder_type_medication">Medikament</string>
+    <string name="reminder_type_measurement">Messung</string>
+    <string name="reminder_days_label">Wochentage</string>
+    <string name="reminder_empty_title">Keine Erinnerungen</string>
+    <string name="reminder_empty_body">Tippe auf + um eine Erinnerung für Medikamente oder Messungen hinzuzufügen.</string>
+
+    <!-- Notification channel -->
+    <string name="notification_channel_name">Erinnerungen</string>
+    <string name="notification_channel_description">Benachrichtigungen für Medikamenten- und Messerinnerungen</string>
+    <string name="notification_title_medication">Medikament einnehmen</string>
+    <string name="notification_title_measurement">Blutdruck messen</string>
 
     <!-- Blood pressure category names -->
     <string name="category_optimal">Optimal</string>

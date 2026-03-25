@@ -3,6 +3,7 @@ package com.example.pulseguard.data.local
 
 import androidx.room.TypeConverter
 import com.example.pulseguard.domain.model.MeasurementArm
+import com.example.pulseguard.domain.model.ReminderType
 
 /**
  * Room TypeConverters for custom types that cannot be stored natively in SQLite.
@@ -12,21 +13,23 @@ import com.example.pulseguard.domain.model.MeasurementArm
  */
 class Converters {
 
-    /**
-     * Converts a [MeasurementArm] enum value to its [String] name for SQLite storage.
-     *
-     * @param arm The [MeasurementArm] value to convert.
-     * @return The string representation of the enum (e.g. `"LEFT"` or `"RIGHT"`).
-     */
+    // ── MeasurementArm ─────────────────────────────────────────────────────
+
+    /** Converts a [MeasurementArm] enum value to its [String] name for SQLite storage. */
     @TypeConverter
     fun fromMeasurementArm(arm: MeasurementArm): String = arm.name
 
-    /**
-     * Converts a [String] from the database back to the corresponding [MeasurementArm] value.
-     *
-     * @param value The string name of the enum value stored in the database.
-     * @return The corresponding [MeasurementArm] enum constant.
-     */
+    /** Converts a [String] from the database back to the corresponding [MeasurementArm]. */
     @TypeConverter
     fun toMeasurementArm(value: String): MeasurementArm = MeasurementArm.valueOf(value)
+
+    // ── ReminderType ───────────────────────────────────────────────────────
+
+    /** Converts a [ReminderType] enum value to its [String] name for SQLite storage. */
+    @TypeConverter
+    fun fromReminderType(type: ReminderType): String = type.name
+
+    /** Converts a [String] from the database back to the corresponding [ReminderType]. */
+    @TypeConverter
+    fun toReminderType(value: String): ReminderType = ReminderType.valueOf(value)
 }

@@ -26,7 +26,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +47,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -102,6 +105,7 @@ import org.koin.androidx.compose.koinViewModel
 fun DashboardScreen(
     onAddEntry: () -> Unit,
     onExport: () -> Unit = {},
+    onReminders: () -> Unit = {},
     viewModel: DashboardViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -146,6 +150,14 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.dashboard_title)) },
                 actions = {
+                    IconButton(onClick = onReminders) {
+                        Icon(
+                            imageVector = Icons.Filled.Notifications,
+                            contentDescription = stringResource(
+                                R.string.cd_reminder_action,
+                            ),
+                        )
+                    }
                     IconButton(onClick = onExport) {
                         Icon(
                             imageVector = Icons.Filled.Share,
@@ -266,13 +278,14 @@ fun DashboardScreen(
 
 /**
  * Wraps [BloodPressureCard] with a [SwipeToDismissBox] that reveals a red delete
- * background on an end-to-start swipe. Confirming the swipe calls [onDelete].
+ * background on an end-to-start swipe. A confirmation dialog is shown before the
+ * entry is actually deleted.
  *
  * Only end-to-start dismissal is enabled; start-to-end swipe is disabled to
  * avoid accidental deletions while scrolling.
  *
  * @param entry    The entry to display and potentially delete.
- * @param onDelete Callback invoked with the entry when the swipe is confirmed.
+ * @param onDelete Callback invoked with the entry when the user confirms deletion.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -281,16 +294,34 @@ private fun SwipeToDeleteCard(
     onDelete: (BloodPressureEntry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDelete(entry)
-                true
-            } else {
-                false
+                showConfirmDialog = true
             }
+            false // Never auto-dismiss; dialog decides
         },
     )
+
+    // Reset swipe position when dialog is dismissed without confirming.
+    LaunchedEffect(showConfirmDialog) {
+        if (!showConfirmDialog) {
+            dismissState.reset()
+        }
+    }
+
+    if (showConfirmDialog) {
+        DeleteConfirmationDialog(
+            onConfirm = {
+                showConfirmDialog = false
+                onDelete(entry)
+            },
+            onDismiss = { showConfirmDialog = false },
+        )
+    }
+
     SwipeToDismissBox(
         state = dismissState,
         enableDismissFromStartToEnd = false,
@@ -316,6 +347,34 @@ private fun SwipeToDeleteCard(
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+/**
+ * Confirmation dialog shown before a blood pressure entry is deleted.
+ *
+ * @param onConfirm Called when the user confirms the deletion.
+ * @param onDismiss Called when the user cancels or taps outside.
+ */
+@Composable
+private fun DeleteConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.dialog_delete_title)) },
+        text = { Text(stringResource(R.string.dialog_delete_message)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.dialog_delete_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.dialog_cancel))
+            }
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

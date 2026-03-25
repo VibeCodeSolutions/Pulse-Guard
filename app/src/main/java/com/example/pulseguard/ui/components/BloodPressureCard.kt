@@ -11,8 +11,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,8 +76,15 @@ fun BloodPressureCard(
         stringResource(R.string.label_arm_right)
     }
 
+    val medicationLabel = if (entry.medicationTaken) {
+        stringResource(R.string.cd_medication_taken)
+    } else {
+        ""
+    }
+
     val contentDesc = "$formattedDateTime – ${entry.systolic}/${entry.diastolic} mmHg, " +
-        "Puls ${entry.pulse}, $armLabel, $categoryLabel"
+        "Puls ${entry.pulse}, $armLabel, $categoryLabel" +
+        if (entry.medicationTaken) ", $medicationLabel" else ""
 
     Card(
         modifier = modifier
@@ -103,6 +114,14 @@ fun BloodPressureCard(
                     Text(
                         text = "${entry.systolic}/${entry.diastolic} mmHg · ${entry.pulse} bpm",
                         style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                if (entry.medicationTaken) {
+                    Icon(
+                        imageVector = Icons.Filled.Medication,
+                        contentDescription = medicationLabel,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
                 Text(
