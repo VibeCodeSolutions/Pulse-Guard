@@ -12,12 +12,13 @@
 
 | Feld | Wert |
 |------|------|
-| **Aktuelle Phase** | Phase 7 – Production Hardening |
+| **Aktuelle Phase** | Phase 8 – Reminder System & UX-Polish |
 | **Aktiver Agent** | ADA |
-| **Gesamtfortschritt** | 7 / 7 Phasen abgeschlossen |
-| **Letztes Update** | 2026-03-04 |
-| **Nächste Phase** | – (alle Phasen abgeschlossen) |
+| **Gesamtfortschritt** | 8 / 8 Phasen abgeschlossen |
+| **Letztes Update** | 2026-05-10 (Final-Sync auf Release v1.1) |
+| **Nächste Phase** | – (alle Phasen abgeschlossen, Release v1.1 live) |
 | **Blocker** | Keine |
+| **Release** | v1.1 (Tag `1.1`, GitHub-Release 2026-03-06) |
 
 ---
 
@@ -32,12 +33,67 @@
 | Phase 5 | Polish | UXA + ADA | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 6 | Testing | QAA | ✅ Abgeschlossen | 2026-03-04 |
 | Phase 7 | Production Hardening | ADA | ✅ Abgeschlossen | 2026-03-04 |
+| Phase 8 | Reminder System & UX-Polish | ADA | ✅ Abgeschlossen | 2026-03-25 |
 
 **Status-Legende:** ⬜ Offen | 🔄 In Arbeit | ✅ Abgeschlossen | ⚠️ Partial
 
 ---
 
 ## 3. Aktueller State Snapshot
+
+### State Snapshot: Phase 8 – Reminder System & UX-Polish
+**Agent:** ADA
+**Datum:** 2026-03-25
+**Status:** COMPLETE
+**Release:** v1.1 (GitHub-Release 2026-03-06, Tag `1.1`)
+
+#### Erledigte Arbeit
+
+**UX-Polish (commit `64752af`):**
+- `ui/components/NumericInputField.kt` – neuer `onAutoAdvance`-Callback feuert nach `maxLength` Ziffern → Focus-Sprung
+- `ui/screens/entry/EntryScreen.kt` – `onAutoAdvance` an Systolisch → Diastolisch → Puls verdrahtet
+- `ui/navigation/PulseGuardNavGraph.kt` – `NavHost` in `Scaffold` gewrappt; persistenter Footer "VibeCode Solutions" (alpha 0.38, `labelSmall`)
+- `androidTest/.../PulseGuardNavGraphTest.kt` – neu (Branding-Footer + Navigation)
+- `androidTest/.../EntryScreenTest.kt` + `DashboardScreenTest.kt` – an neue VM-Signatur und Auto-Focus angepasst
+- `gradle/libs.versions.toml` – `koin-test` als androidTest-Dependency
+
+**Reminder-System (commit `dc39dbb`):**
+- `data/local/entity/Reminder.kt` (neu) – Room-Entity mit `id`, `type` (MEASUREMENT|MEDICATION), `hour`, `minute`, `enabled`, `daysOfWeek`-Bitmaske, optional `label`
+- `data/local/dao/ReminderDao.kt` (neu) – CRUD + reaktive `Flow<List<Reminder>>`
+- `data/local/Converters.kt` – `ReminderType ↔ String`-Konverter ergänzt
+- `data/local/PulseGuardDatabase.kt` – v1 → v2 mit `MIGRATION_1_2` (CREATE TABLE reminders)
+- `data/local/migration/2.json` – Room-Schema-Export für v2
+- `data/repository/ReminderRepositoryImpl.kt` + `domain/repository/ReminderRepository.kt` (neu)
+- `domain/usecase/{SaveReminderUseCase, ToggleReminderUseCase, DeleteReminderUseCase, GetRemindersUseCase}.kt` (neu)
+- `domain/model/ReminderType.kt` (neu)
+- `notification/NotificationHelper.kt` (neu) – Channel-Registry (zwei Channels: measurement + medication), Builder-Helpers
+- `notification/ReminderScheduler.kt` (neu) – `AlarmManager` mit `setExactAndAllowWhileIdle` + `getBroadcast`-PendingIntents; Day-of-Week-Filter, nächste passende Slot-Berechnung; Cancel + Reschedule
+- `notification/ReminderAlarmReceiver.kt` (neu) – BroadcastReceiver, baut Notification, Reschedule für nächsten Slot
+- `notification/BootReceiver.kt` (neu) – `BOOT_COMPLETED`-Listener; reschedules alle aktiven Reminder
+- `ui/screens/reminder/{ReminderUiState, ReminderEvent, ReminderViewModel, ReminderScreen}.kt` (neu) – komplette UI für Liste, Add/Edit, TimePicker, Day-Toggle
+- `ui/navigation/{NavRoutes, PulseGuardNavGraph}.kt` – `REMINDERS`-Route + Navigation
+- `ui/screens/dashboard/DashboardScreen.kt` – TopAppBar-Action „Erinnerungen" + Delete-Confirmation-Dialog (vor Swipe-to-Dismiss; Undo-Snackbar bleibt erhalten)
+- `ui/components/BloodPressureCard.kt` – Medikation-Icon sichtbar wenn `medicationTaken == true`
+- `domain/model/BloodPressureCategory.kt` – KDoc um AHA-2017-Cross-Reference erweitert
+- `res/drawable/ic_notification_measurement.xml` + `ic_notification_medication.xml` (neu)
+- `res/values/strings.xml` – +26 Strings (Reminder-UI, Channel-Labels, Confirmation-Dialog)
+- `AndroidManifest.xml` – Permissions: `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `RECEIVE_BOOT_COMPLETED`; Receiver-Registrierungen
+- `di/AppModule.kt` – Reminder-Stack komplett (Repository, 4 UseCases, ViewModel, NotificationHelper, Scheduler)
+- `PulseGuardApp.kt` – `NotificationHelper.createChannels()` beim App-Start
+
+#### Geänderte Dateien (Aggregat 2 Commits)
+- 2 Commits, +1853 / -68 Zeilen, 39 berührte Dateien
+
+#### Verifizierung
+- `./gradlew assembleDebug`: ✅ (bei Release-Tag 1.1 verifiziert)
+- DB-Migration v1→v2 mit Schema-Export ✅
+- Permissions deklariert + Runtime-Request für POST_NOTIFICATIONS in ReminderScreen ✅
+
+#### Release v1.1
+- GitHub-Release `1.1` gepublisht 2026-03-06 (Body: „New reminder and some UI Chancen and bugfixes")
+- Final-Sync 2026-05-10: `versionName` 1.0 → 1.1, `versionCode` 1 → 2; Tag `1.1` lokal nachgezogen; APK als Release-Asset angehängt
+
+---
 
 ### State Snapshot: Phase 7 – Production Hardening
 **Agent:** ADA

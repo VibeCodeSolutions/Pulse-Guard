@@ -227,6 +227,58 @@ Vollständige Delete+Undo-Funktion, explizites IO-Dispatching, Custom Adaptive I
 
 ---
 
+## Phase 8: Reminder System & UX-Polish (Release v1.1)
+**Agent:** ADA | **Abhängigkeiten:** Alle Phasen ✅ | **Status:** ✅ Abgeschlossen (2026-03-25)
+
+### Deliverable
+Konfigurierbare Reminder-Notifications (Messung + Medikation), Auto-Advance-Focus im Entry, globaler Branding-Footer, Delete-Confirmation, Medikations-Icon auf der Card.
+
+### Aufgaben
+
+**UX-Polish (commit `64752af`):**
+- [x] **8.1** `NumericInputField` – `onAutoAdvance`-Callback nach Erreichen von `maxLength`
+- [x] **8.2** `EntryScreen` – Auto-Advance Systolisch → Diastolisch → Puls verdrahtet
+- [x] **8.3** `PulseGuardNavGraph` – `NavHost` in `Scaffold`, persistenter Footer „VibeCode Solutions" (alpha 0.38, `labelSmall`)
+- [x] **8.4** `gradle/libs.versions.toml` – `koin-test` als androidTest-Dependency
+- [x] **8.5** `PulseGuardNavGraphTest` (neu) – Branding-Footer + Navigation
+- [x] **8.6** `EntryScreenTest` + `DashboardScreenTest` – an neue VM-Signatur und Auto-Focus angepasst
+
+**Reminder-System (commit `dc39dbb`):**
+- [x] **8.7** Room-Entity `Reminder` (id, type, hour, minute, enabled, daysOfWeek-Bitmaske, label)
+- [x] **8.8** `ReminderDao` – CRUD + reaktive Flow-API
+- [x] **8.9** `Converters` – `ReminderType ↔ String`
+- [x] **8.10** DB-Migration v1 → v2 inkl. Schema-Export `2.json`
+- [x] **8.11** `ReminderRepository` + `ReminderRepositoryImpl`
+- [x] **8.12** UseCases: `SaveReminderUseCase`, `ToggleReminderUseCase`, `DeleteReminderUseCase`, `GetRemindersUseCase`
+- [x] **8.13** `domain/model/ReminderType` (MEASUREMENT, MEDICATION)
+- [x] **8.14** `NotificationHelper` – zwei Channels (measurement + medication) registrieren
+- [x] **8.15** `ReminderScheduler` – `AlarmManager.setExactAndAllowWhileIdle` + `PendingIntent.getBroadcast`; Day-of-Week-Filter; Reschedule
+- [x] **8.16** `ReminderAlarmReceiver` (BroadcastReceiver) – Notification posten + Reschedule
+- [x] **8.17** `BootReceiver` (`BOOT_COMPLETED`) – aktive Reminder reschedulen
+- [x] **8.18** `ReminderUiState` / `ReminderEvent` / `ReminderViewModel` / `ReminderScreen`
+- [x] **8.19** `NavRoutes.REMINDERS` + Navigation aus Dashboard-TopAppBar
+- [x] **8.20** Delete-Confirmation-Dialog vor Swipe-Action (Undo-Snackbar bleibt erhalten)
+- [x] **8.21** `BloodPressureCard` – Medikations-Icon sichtbar wenn `medicationTaken == true`
+- [x] **8.22** `BloodPressureCategory` KDoc um AHA-2017-Cross-Reference ergänzt
+- [x] **8.23** Notification-Drawables `ic_notification_measurement.xml` + `ic_notification_medication.xml`
+- [x] **8.24** `strings.xml` – Reminder-UI, Channel-Labels, Confirmation-Dialog (+26 Strings)
+- [x] **8.25** `AndroidManifest.xml` – Permissions `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `RECEIVE_BOOT_COMPLETED`; Receiver registrieren
+- [x] **8.26** `AppModule.kt` – Reminder-Stack (Repository, 4 UseCases, ViewModel, NotificationHelper, Scheduler)
+- [x] **8.27** `PulseGuardApp` – `NotificationHelper.createChannels()` beim App-Start
+
+**Release v1.1:**
+- [x] **8.28** GitHub-Release `1.1` publiziert (2026-03-06)
+- [x] **8.29** Final-Sync 2026-05-10: `versionName` 1.0 → 1.1, `versionCode` 1 → 2, Tag `1.1` lokal, APK an Release angehängt
+- [x] **8.30** State Snapshot in `state.md` schreiben
+
+### Kontext-Hinweise
+- `setExactAndAllowWhileIdle` benötigt ab Android 12+ `SCHEDULE_EXACT_ALARM` (oder `USE_EXACT_ALARM`); UI sollte Permission-Stand vor Aktivierung prüfen
+- `daysOfWeek` als 7-Bit-Bitmaske (Mo=1, Di=2, …, So=64); Scheduler berechnet nächsten passenden Slot ausgehend von „now"
+- `BootReceiver` ist Pflicht — sonst überleben Alarms keinen Reboot
+- DB-Migration immer mit Schema-Export prüfen, sonst kein verifizierbarer Pfad bei v3+
+
+---
+
 ## Zusammenfassung: Abhängigkeitsgraph
 
 ```
